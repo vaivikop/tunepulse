@@ -63,10 +63,7 @@ const Sidebar = ({ showNav, setShowNav }) => {
           target="_blank"
           rel="noreferrer"
         >
-          <p className=" hover:border border-gray-200 p-1 font-medium w-fit rounded cursor-pointer text-sm flex items-center gap-1">
-            <FaGithub />
-            Github
-          </p>
+        
         </a>
       </div>
     </div>
