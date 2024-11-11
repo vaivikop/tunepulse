@@ -26,24 +26,34 @@ export const metadata = {
   site_name: "TunePulse",
   manifest: "/manifest.json",
   author: "Vaivik Shah",
-
+  
   // Open Graph Tags
   "og:title": "TunePulse - Your Personalized Music Experience",
   "og:description": "TunePulse - The ultimate music streaming platform created by Vaivik Shah, offering curated playlists and seamless playback.",
   "og:image": "https://res.cloudinary.com/dbr73rpz9/image/upload/v1690380865/images/logo-color_noktgr.png",
   "og:url": "https://tunepulse.vercel.app",
   "og:type": "website",
+  "og:site_name": "TunePulse",
 
-  // Twitter Card Tags
-  "twitter:card": "summary_large_image",
-  "twitter:title": "TunePulse - Your Personalized Music Experience",
-  "twitter:description": "Discover new music and stream your favorites on TunePulse - crafted by Vaivik Shah for music lovers everywhere.",
-  "twitter:image": "https://res.cloudinary.com/dbr73rpz9/image/upload/v1690380865/images/logo-color_noktgr.png",
-  
+
 
   // Additional Meta Tags
   keywords: "music streaming, playlists, audio player, songs history, TunePulse, Vaivik Shah",
+  "theme-color": "#1DB954",  // Spotify green or another brand color for TunePulse
+  
+  // Apple Touch Icon
+  "apple-touch-icon": [
+    { rel: "apple-touch-icon", sizes: "180x180", href: "/apple-touch-icon.png" }
+  ],
+
+  // Favicon for various device types and platforms
+  "favicon": [
+    { rel: "icon", type: "image/png", sizes: "32x32", href: "/favicon-32x32.png" },
+    { rel: "icon", type: "image/png", sizes: "16x16", href: "/favicon-16x16.png" },
+    { rel: "icon", href: Favicon.src },
+  ],
 };
+
 
 
 export default function RootLayout({ children }) {
