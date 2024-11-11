@@ -26,7 +26,7 @@ export const metadata = {
   site_name: "TunePulse",
   manifest: "/manifest.json",
   author: "Vaivik Shah",
-<meta name="google-site-verification" content="inOUL41sMDa477y9eiYxRD0LxKM_mMvE90qHzdmRxCc" />
+
   // Open Graph Tags
   "og:title": "TunePulse - Your Personalized Music Experience",
   "og:description": "TunePulse - The ultimate music streaming platform created by Vaivik Shah, offering curated playlists and seamless playback.",
