@@ -20,7 +20,9 @@ const Sidebar = ({ showNav, setShowNav }) => {
     const link = document.createElement("a");
     link.href = apkUrl;
     link.download = "tunepulse.apk";
+    document.body.appendChild(link);
     link.click();
+    document.body.removeChild(link);
   };
 
   return (
