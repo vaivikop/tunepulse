@@ -13,6 +13,16 @@ import { setProgress } from "@/redux/features/loadingBarSlice";
 
 const Sidebar = ({ showNav, setShowNav }) => {
   const dispatch = useDispatch();
+
+  const handleDownload = () => {
+    // Replace with your APK file's URL
+    const apkUrl = "./tunepulse.apk";
+    const link = document.createElement("a");
+    link.href = apkUrl;
+    link.download = "app.apk";
+    link.click();
+  };
+
   return (
     <div
       className={`${
@@ -58,13 +68,12 @@ const Sidebar = ({ showNav, setShowNav }) => {
             DMCA
           </p>
         </Link>
-        <a
-          href="https://github.com/himanshu8443/hayasaka"
-          target="_blank"
-          rel="noreferrer"
+        <button
+          onClick={handleDownload}
+          className="hover:border border-gray-200 p-1 font-medium w-fit rounded cursor-pointer text-sm"
         >
-        
-        </a>
+          Download App
+        </button>
       </div>
     </div>
   );
