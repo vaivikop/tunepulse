@@ -4,9 +4,9 @@
     "display": "standalone",
     "scope": "/",
     "start_url": "/",
-    "name": "Hayasaka",
-    "description": "Music streaming and downloading platform.",
-    "short_name": "Hayasaka",
+    "name": "TunePulse",
+    "description": "Music streaming and downloading platform. Made with love by vaivik shah",
+    "short_name": "Tunepulse",
     "icons": [
         {
             "src": "/icon-192x192.png",

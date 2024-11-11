@@ -16,11 +16,13 @@ const Sidebar = ({ showNav, setShowNav }) => {
 
   const handleDownload = () => {
     // Replace with your APK file's URL
-    const apkUrl = "./tunepulse.apk";
+    const apkUrl = "https://raw.githubusercontent.com/vaivikop/tunepulse/refs/heads/main/src/components/Sidebar/tunepulse.apk";
     const link = document.createElement("a");
     link.href = apkUrl;
-    link.download = "tunepulse.apk";
+    link.download = "TunePulse.apk";
+    document.body.appendChild(link);
     link.click();
+    document.body.removeChild(link);
   };
 
   return (
@@ -43,7 +45,7 @@ const Sidebar = ({ showNav, setShowNav }) => {
                 }}
                 src={logoWhite}
                 alt="logo"
-                className=" lg:py-2  aspect-video w-[139px] h-[31px] lg:h-[62px] lg:w-[190px]"
+                className=" lg:py-2  aspect-video w-[139px] h-[40px] lg:h-[62px] lg:w-[190px]"
               />
             </Link>
           </div>
