@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import Navbar from "@/components/Navbar";
 import "./globals.css";
 import MusicPlayer from "@/components/MusicPlayer";
@@ -9,6 +10,7 @@ import { Toaster } from "react-hot-toast";
 import AuthProvider from "./AuthProvider";
 import { Poppins } from "next/font/google";
 import Script from "next/script";
+import SplashScreen from "@/components/SplashScreen"; // Import SplashScreen
 
 const poppins = Poppins({
   weight: "500",
@@ -27,7 +29,6 @@ export const metadata = {
   manifest: "/manifest.json",
   author: "Vaivik Shah",
   
-  // Open Graph Tags
   "og:title": "TunePulse - Your Personalized Music Experience",
   "og:description": "TunePulse - The ultimate music streaming platform created by Vaivik Shah, offering curated playlists and seamless playback.",
   "og:image": "https://res.cloudinary.com/dbr73rpz9/image/upload/v1690380865/images/logo-color_noktgr.png",
@@ -35,18 +36,13 @@ export const metadata = {
   "og:type": "website",
   "og:site_name": "TunePulse",
 
-
-
-  // Additional Meta Tags
   keywords: "music streaming, playlists, audio player, songs history, TunePulse, Vaivik Shah",
-  "theme-color": "#1DB954",  // Spotify green or another brand color for TunePulse
+  "theme-color": "#1DB954",
   
-  // Apple Touch Icon
   "apple-touch-icon": [
     { rel: "apple-touch-icon", sizes: "180x180", href: "/apple-touch-icon.png" }
   ],
 
-  // Favicon for various device types and platforms
   "favicon": [
     { rel: "icon", type: "image/png", sizes: "32x32", href: "/favicon-32x32.png" },
     { rel: "icon", type: "image/png", sizes: "16x16", href: "/favicon-16x16.png" },
@@ -54,9 +50,15 @@ export const metadata = {
   ],
 };
 
-
-
 export default function RootLayout({ children }) {
+  const [showSplash, setShowSplash] = useState(true);
+
+  useEffect(() => {
+    // Hide splash screen after 3 seconds
+    const timer = setTimeout(() => setShowSplash(false), 3000);
+    return () => clearTimeout(timer); // Cleanup timer on unmount
+  }, []);
+
   return (
     <html lang="en">
       <Script
@@ -65,27 +67,30 @@ export default function RootLayout({ children }) {
       ></Script>
       <Script>
         {`
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-Z4FJ5T627Q');
-  `}
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-Z4FJ5T627Q');
+        `}
       </Script>
       <body className={poppins.className}>
-        <Providers>
-          <AuthProvider>
-            <TopProgressBar />
-            <SongsHistory />
-            <Navbar />
-            <Toaster />
-            {children}
-            <div className="h-20"></div>
-            <div className="fixed  bottom-0 left-0 right-0 flex backdrop-blur-lg rounded-t-3 z-50">
-              <MusicPlayer />
-            </div>
-          </AuthProvider>
-        </Providers>
+        {showSplash ? (
+          <SplashScreen /> // Show splash screen while loading
+        ) : (
+          <Providers>
+            <AuthProvider>
+              <TopProgressBar />
+              <SongsHistory />
+              <Navbar />
+              <Toaster />
+              {children}
+              <div className="h-20"></div>
+              <div className="fixed bottom-0 left-0 right-0 flex backdrop-blur-lg rounded-t-3 z-50">
+                <MusicPlayer />
+              </div>
+            </AuthProvider>
+          </Providers>
+        )}
       </body>
     </html>
   );
