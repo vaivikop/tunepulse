@@ -12,7 +12,8 @@ import { Toaster } from "react-hot-toast";
 import AuthProvider from "./AuthProvider";
 import { Poppins } from "next/font/google";
 import Script from "next/script";
-import SplashScreen from "@/components/SplashScreen"; // Import SplashScreen
+import SplashScreen from "@/components/SplashScreen";
+import { metadata } from "./metadata"; // Import metadata
 
 const poppins = Poppins({
   weight: "500",
@@ -20,45 +21,12 @@ const poppins = Poppins({
   display: "swap",
 });
 
-export const metadata = {
-  title: "TunePulse - Your Personalized Music Experience",
-  description: "TunePulse - A music streaming app designed to deliver the best music experience with curated playlists, song history, and seamless playback. Created by Vaivik Shah.",
-  image: "https://res.cloudinary.com/dbr73rpz9/image/upload/v1690380865/images/logo-color_noktgr.png",
-  url: "https://tunepulse.vercel.app",
-  type: "website",
-  icons: [{ rel: "icon", url: Favicon.src }],
-  site_name: "TunePulse",
-  manifest: "/manifest.json",
-  author: "Vaivik Shah",
-  
-  "og:title": "TunePulse - Your Personalized Music Experience",
-  "og:description": "TunePulse - The ultimate music streaming platform created by Vaivik Shah, offering curated playlists and seamless playback.",
-  "og:image": "https://res.cloudinary.com/dbr73rpz9/image/upload/v1690380865/images/logo-color_noktgr.png",
-  "og:url": "https://tunepulse.vercel.app",
-  "og:type": "website",
-  "og:site_name": "TunePulse",
-
-  keywords: "music streaming, playlists, audio player, songs history, TunePulse, Vaivik Shah",
-  "theme-color": "#1DB954",
-  
-  "apple-touch-icon": [
-    { rel: "apple-touch-icon", sizes: "180x180", href: "/apple-touch-icon.png" }
-  ],
-
-  "favicon": [
-    { rel: "icon", type: "image/png", sizes: "32x32", href: "/favicon-32x32.png" },
-    { rel: "icon", type: "image/png", sizes: "16x16", href: "/favicon-16x16.png" },
-    { rel: "icon", href: Favicon.src },
-  ],
-};
-
 export default function RootLayout({ children }) {
   const [showSplash, setShowSplash] = useState(true);
 
   useEffect(() => {
-    // Hide splash screen after 3 seconds
     const timer = setTimeout(() => setShowSplash(false), 3000);
-    return () => clearTimeout(timer); // Cleanup timer on unmount
+    return () => clearTimeout(timer);
   }, []);
 
   return (
@@ -77,7 +45,7 @@ export default function RootLayout({ children }) {
       </Script>
       <body className={poppins.className}>
         {showSplash ? (
-          <SplashScreen /> // Show splash screen while loading
+          <SplashScreen />
         ) : (
           <Providers>
             <AuthProvider>
