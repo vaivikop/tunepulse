@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   BsFillVolumeUpFill,
   BsVolumeDownFill,
   BsFillVolumeMuteFill,
 } from "react-icons/bs";
-import { BiAddToQueue } from "react-icons/bi";
+import { BiAddToQueue, BiShareAlt } from "react-icons/bi"; // Import share icon
 import { addSongToPlaylist, getUserPlaylists } from "@/services/playlistApi";
 import { toast } from "react-hot-toast";
 
@@ -19,30 +19,73 @@ const VolumeBar = ({
 }) => {
   const [showMenu, setShowMenu] = useState(false);
   const [playlists, setPlaylists] = useState([]);
+  const [showShareModal, setShowShareModal] = useState(false); // State to control modal visibility
+
   useEffect(() => {
     const getPlaylists = async () => {
       const res = await getUserPlaylists();
-      if (res?.success == true) {
+      if (res?.success === true) {
         setPlaylists(res?.data?.playlists);
       }
     };
     getPlaylists();
   }, []);
 
-  // add song to playlist
+  // Function to add song to playlist
   const handleAddToPlaylist = async (song, playlistID) => {
     setShowMenu(false);
     const res = await addSongToPlaylist(playlistID, song);
-    if (res?.success == true) {
+    if (res?.success === true) {
       toast.success(res?.message);
     } else {
       toast.error(res?.message);
     }
   };
+
+  // Function to handle sharing
+  const handleShare = () => {
+    const shareData = {
+      title: activeSong?.name || "Song",
+      text: `Check out this song: ${activeSong?.name}`,
+      url: window.location.href,
+    };
+
+    if (navigator.share) {
+      navigator
+        .share(shareData)
+        .then(() => toast.success("Song shared successfully"))
+        .catch((error) => toast.error("Error sharing song"));
+    } else {
+      setShowShareModal(true); // Show custom modal if Web Share API is unavailable
+    }
+  };
+
+  // Function to copy link to clipboard
+  const handleCopyLink = () => {
+    const url = window.location.href;
+    navigator.clipboard.writeText(url).then(() => {
+      toast.success("Link copied to clipboard!");
+      setShowShareModal(false); // Close modal after copying
+    });
+  };
+
   return (
     <>
       <div className="hidden lg:flex flex-1 items-center justify-end">
-        <div className=" relative">
+        {/* Share Button */}
+        <BiShareAlt
+          onClick={(e) => {
+            e.stopPropagation();
+            handleShare();
+          }}
+          title="Share Song"
+          size={25}
+          color={"white"}
+          className="cursor-pointer m-1" // Reduced margin
+        />
+
+        {/* Add to Playlist Button */}
+        <div className="relative">
           <BiAddToQueue
             onClick={(e) => {
               e.stopPropagation();
@@ -51,13 +94,11 @@ const VolumeBar = ({
             title="Add to Playlist"
             size={25}
             color={"white"}
-            className={`${!true ? "hidden sm:block" : " m-3"} cursor-pointer`}
+            className="cursor-pointer m-1" // Reduced margin
           />
           {showMenu && (
             <div
-              onClick={() => {
-                setShowMenu(false);
-              }}
+              onClick={() => setShowMenu(false)}
               className="absolute text-white bottom-[130%] backdrop-blur-lg rounded-lg p-3 w-32 flex flex-col gap-2 z-[100]"
               style={{
                 backgroundColor: bgColor
@@ -90,18 +131,20 @@ const VolumeBar = ({
             </div>
           )}
         </div>
+
+        {/* Volume Controls */}
         {value <= 1 && value > 0.5 && (
           <BsFillVolumeUpFill
             size={25}
             color="#FFF"
-            className=" cursor-pointer"
+            className="cursor-pointer"
             onClick={() => setVolume(0)}
           />
         )}
         {value <= 0.5 && value > 0 && (
           <BsVolumeDownFill
             size={25}
-            className=" cursor-pointer"
+            className="cursor-pointer"
             color="#FFF"
             onClick={() => setVolume(0)}
           />
@@ -110,7 +153,7 @@ const VolumeBar = ({
           <BsFillVolumeMuteFill
             size={25}
             color="#FFF"
-            className=" cursor-pointer"
+            className="cursor-pointer"
             onClick={() => setVolume(1)}
           />
         )}
@@ -127,15 +170,29 @@ const VolumeBar = ({
           className="2xl:w-24 lg:w-24 md:w-28 h-1 ml-2 accent-[#00e6e6] cursor-pointer"
         />
       </div>
-      {/* overlay */}
-      {showMenu && (
+
+      {/* Share Modal */}
+      {showShareModal && (
         <div
           onClick={(e) => {
             e.stopPropagation();
-            setShowMenu(false);
+            setShowShareModal(false); // Close the modal if clicked outside
           }}
-          className=" absolute w-screen h-screen bottom-0 left-0 z-[50]"
-        ></div>
+          className="absolute w-screen h-screen bottom-0 left-0 bg-black opacity-50 z-[50]"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()} // Prevent modal closing when interacting
+            className="absolute bg-white p-4 rounded-lg w-72 left-1/2 transform -translate-x-1/2 top-1/4 z-[100]"
+          >
+            <h3 className="text-center text-lg font-semibold mb-4">Share this Song</h3>
+            <button
+              onClick={handleCopyLink}
+              className="w-full text-center bg-blue-500 text-white p-2 rounded-lg"
+            >
+              Copy Link
+            </button>
+          </div>
+        </div>
       )}
     </>
   );
