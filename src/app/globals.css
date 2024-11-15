@@ -409,3 +409,21 @@ input {
   border-bottom: 1px solid rgba(255, 255, 255, .5);
   transition: all 500ms cubic-bezier(0, 0.110, 0.35, 2);
 }
+.splash-screen {
+  background-color: rgba(0, 0, 0, 0.8);  /* Darker background with transparency */
+  opacity: 1;
+  transition: opacity 1s ease-in-out;
+}
+
+.splash-logo {
+  animation: bounce 1.5s ease-in-out infinite;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
