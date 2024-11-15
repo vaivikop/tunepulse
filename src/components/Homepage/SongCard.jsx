@@ -59,11 +59,11 @@ const SongCard = ({ song, isPlaying, activeSong }) => {
   return (
     <div
       key={song?.id}
-      className="flex flex-col lg:w-[205px] lg:[220px] p-2 bg-white/5 bg-opacity-80 backdrop-blur-sm rounded-lg cursor-pointer"
+      className="flex flex-col w-[220px] p-4 bg-white/5 bg-opacity-80 backdrop-blur-sm rounded-xl shadow-md cursor-pointer transition-transform duration-300 ease-in-out hover:scale-105"
     >
       <Link
         onClick={(e) => {
-          if (song?.type == "song") {
+          if (song?.type === "song") {
             e.preventDefault();
           }
         }}
@@ -75,9 +75,9 @@ const SongCard = ({ song, isPlaying, activeSong }) => {
             : ""
         }
       >
-        <div className="relative w-full lg:h-[178px] group">
+        <div className="relative w-full h-[200px] group">
           <div
-            className={`absolute inset-0 p-2 justify-center items-center bg-black bg-opacity-0 group-hover:flex ${
+            className={`absolute inset-0 flex justify-center items-center bg-black bg-opacity-40 rounded-lg group-hover:flex ${
               activeSong?.id === song?.id
                 ? "hover:flex hover:bg-black hover:bg-opacity-70"
                 : "hidden"
@@ -102,24 +102,20 @@ const SongCard = ({ song, isPlaying, activeSong }) => {
             } 480w, ${song.image?.[2]?.url || song.image?.[2]?.link} 800w`}
             sizes="(max-width: 320px) 280px, (max-width: 480px) 440px, 800px"
             src={song.image?.[1]?.url || song.image?.[1]?.link}
-            className={`${
-              song.type === "playlist" && song?.subtitle === "JioSaavn"
-                ? "rounded-full"
-                : "rounded-lg"
-            } w-full h-full `}
+            className={`rounded-lg shadow-xl w-full h-full object-cover transition-transform duration-300 ease-in-out`}
           />
         </div>
 
-        <div className=" mt-2 lg:mt-4 flex flex-col">
+        <div className="mt-3 flex flex-col">
           <p
-            className={`font-semibold text-xs lg:text-sm text-white truncate w-full ${
+            className={`font-semibold text-sm text-white truncate w-full ${
               song?.subtitle === "JioSaavn" ? "text-center" : ""
             }`}
           >
             {song?.name?.replaceAll("&#039;", "'")?.replaceAll("&amp;", "&") ||
               song?.title}
           </p>
-          <p className="text-[9px] lg:text-xs truncate text-gray-300 mt-1">
+          <p className="text-xs text-gray-200 mt-1">
             {song?.artists?.primary?.map((artist) => artist?.name).join(", ") ||
               song?.artists?.map((artist) => artist?.name).join(", ") ||
               (song?.subtitle != "JioSaavn" && song?.subtitle)}
