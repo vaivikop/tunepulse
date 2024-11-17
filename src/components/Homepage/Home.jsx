@@ -63,7 +63,7 @@ const Home = () => {
     <div>
       <OnlineStatus />
       <h1 className="text-4xl font-bold mx-2 m-9 text-white flex gap-2">
-        {salutation}, {userName} <GiMusicalNotes />
+        " {salutation}, {userName} " <GiMusicalNotes />
       </h1>
 
       <ListenAgain />
