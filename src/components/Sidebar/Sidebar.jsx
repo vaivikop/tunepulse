@@ -67,10 +67,10 @@ return (
       </div>
     </div>
     
-    {/* New "Created with ❤️ by Vaivik Shah" line */}
-    <div className="text-center text-gray-200 mb-2">
-      <p className="text-sm">Created with ❤️ by Vaivik Shah</p>
-    </div>
+    {/* Footer Message */}
+    <div className="text-center text-gray-400 text-sm mb-4">
+          <p>Created with ❤️ by Vaivik Shah</p>
+        </div>
 
     <div className="mb-28 text-gray-200 mx-3 flex gap-3">
       <Link href="/dmca">
