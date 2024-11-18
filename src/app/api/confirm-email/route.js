@@ -1,3 +1,4 @@
+'use client'
 import { NextResponse } from "next/server";
 import jwt from "jsonwebtoken"; // Use JWT for token verification
 import User from "@/models/User";
