@@ -1,11 +1,10 @@
-import { NextResponse } from 'next/server';
-import jwt from 'jsonwebtoken'; // Use JWT for token signing and verification
-import User from '@/models/User';
-import dbConnect from '@/utils/dbconnect';
+import { NextResponse } from "next/server";
+import jwt from "jsonwebtoken"; // Use JWT for token verification
+import User from "@/models/User";
+import dbConnect from "@/utils/dbconnect";
 
-const JWT_SECRET = process.env.JWT_SECRET; // Ensure you have a secret in .env
+const JWT_SECRET = process.env.JWT_SECRET;
 
-// Handle email confirmation
 export async function POST(req) {
   const { token } = req.body;
 
@@ -16,16 +15,12 @@ export async function POST(req) {
     );
   }
 
-  await dbConnect();
-
   try {
-    // Step 1: Verify the token
-    const decoded = jwt.verify(token, JWT_SECRET); // Decode and verify the token
-    const { email } = decoded; // Assuming the token contains the email (or another identifier)
+    await dbConnect();
+    const decoded = jwt.verify(token, JWT_SECRET); // Verify the token
+    const { email } = decoded;
 
-    // Step 2: Check if the user exists and if the token is associated with an email change request
     const user = await User.findOne({ email });
-
     if (!user) {
       return NextResponse.json(
         { success: false, message: 'User not found' },
@@ -33,24 +28,22 @@ export async function POST(req) {
       );
     }
 
-    // Step 3: Check if the token matches the pending email change request
-    if (user.emailChangeToken !== token) {
+    // Check if the token matches the email change request
+    if (user.emailChangeToken !== token || user.emailChangeTokenExpires < Date.now()) {
       return NextResponse.json(
         { success: false, message: 'Invalid or expired token' },
         { status: 400 }
       );
     }
 
-    // Step 4: Update the user's email and clear the pending change and token
+    // Confirm the email change
     user.email = user.pendingEmail;
-    user.pendingEmail = null; // Clear the pending email
-    user.emailChangeToken = null; // Clear the token
-    user.isVerified = true; // Optional: mark the user as verified if required
+    user.pendingEmail = null; // Clear pending email
+    user.emailChangeToken = null; // Clear token
+    user.emailChangeTokenExpires = null; // Clear token expiry
 
-    // Save the user data with the updated email
     await user.save();
 
-    // Step 5: Return success
     return NextResponse.json(
       { success: true, message: 'Email confirmed and updated successfully' },
       { status: 200 }

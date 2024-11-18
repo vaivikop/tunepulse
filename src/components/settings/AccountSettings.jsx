@@ -67,6 +67,7 @@ const AccountSettings = () => {
       setIsLoading(true);
 
       if (isEmailChanged) {
+        // If email has changed, send email confirmation link and stop further processing
         setMessage('An email confirmation link has been sent to your new email address.');
         setIsLoading(false);
         return; // Don't update the account if email is changed, only send confirmation

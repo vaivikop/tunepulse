@@ -37,6 +37,18 @@ const fileSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    pendingEmail: {  // New field for the pending email address
+      type: String,
+      default: null,
+    },
+    emailChangeToken: {  // New field for the token used for email change verification
+      type: String,
+      default: null,
+    },
+    emailChangeTokenExpires: {  // New field for expiration time of the email change token
+      type: Date,
+      default: null,
+    },
     userData: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "userData",
