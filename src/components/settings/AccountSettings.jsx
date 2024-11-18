@@ -14,6 +14,7 @@ const AccountSettings = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [isEmailChanged, setIsEmailChanged] = useState(false); // Track if email is changed
+  const [profileImage, setProfileImage] = useState(''); // To hold the profile image URL
 
   // Fetch user data on component mount
   useEffect(() => {
@@ -26,6 +27,7 @@ const AccountSettings = () => {
           email: userData.email || '',
           imageUrl: userData.imageUrl || '',
         });
+        setProfileImage(userData.imageUrl); // Set profile image
       } catch (error) {
         console.error('Error fetching user data:', error);
       }
@@ -46,6 +48,16 @@ const AccountSettings = () => {
     } else {
       setIsEmailChanged(false); // Reset if email is not changed
     }
+
+    // Handle image file change
+    if (name === 'imageUrl' && e.target.files[0]) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfileImage(reader.result); // Set profile image preview
+      };
+      reader.readAsDataURL(file); // Show image preview before uploading
+    }
   };
 
   // Handle form submission for updates
@@ -53,13 +65,31 @@ const AccountSettings = () => {
     e.preventDefault();
     try {
       setIsLoading(true);
+
       if (isEmailChanged) {
         setMessage('An email confirmation link has been sent to your new email address.');
         setIsLoading(false);
-        return;
+        return; // Don't update the account if email is changed, only send confirmation
       }
 
-      const response = await axios.put('/api/userInfo', formData);
+      // If a profile picture is uploaded, handle upload to Cloudinary or server
+      const updatedData = { ...formData };
+
+      if (formData.imageUrl && formData.imageUrl instanceof File) {
+        const formDataForUpload = new FormData();
+        formDataForUpload.append('file', formData.imageUrl);
+        formDataForUpload.append('upload_preset', 'ml_default'); // Add your Cloudinary preset
+
+        // Upload the image to Cloudinary and get the URL
+        const uploadResponse = await axios.post(
+          'https://api.cloudinary.com/v1_1/dgrxq7vm5/upload',
+          formDataForUpload
+        );
+        updatedData.imageUrl = uploadResponse.data.secure_url; // Set the image URL
+      }
+
+      // Send the update request to the server
+      const response = await axios.put('/api/userInfo', updatedData);
       setMessage('Account updated successfully!');
       setIsLoading(false);
     } catch (error) {
@@ -109,6 +139,7 @@ const AccountSettings = () => {
           {/* Profile Picture */}
           <div>
             <label className="block text-gray-400 mb-1">Profile Picture</label>
+            {profileImage && <img src={profileImage} alt="Profile" className="w-20 h-20 rounded-full mb-2" />}
             <input
               type="file"
               name="imageUrl"
