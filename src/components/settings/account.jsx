@@ -1,5 +1,8 @@
+'use client';
+
 import React, { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
+import { getUserInfo } from "@/services/dataAPI"; // Assuming this function fetches the user data
 import { useRouter } from "next/navigation"; // Import router to redirect
 
 const Account = () => {
@@ -15,11 +18,8 @@ const Account = () => {
     const fetchUser = async () => {
       try {
         setLoading(true);
-        const res = await fetch("/api/userInfo", { method: "GET" }); // Adjust to your user info API
-        const result = await res.json();
-        if (result.success) {
-          setUser(result.data);
-        }
+        const res = await getUserInfo(); // Fetch user data from API
+        setUser(res); // Set the user data
       } catch (error) {
         console.error("Error fetching user data:", error);
       } finally {
@@ -55,12 +55,13 @@ const Account = () => {
   const handleSave = async () => {
     if (!newImage) return; // If there's no new image, do nothing
 
-    const imageFile = document.getElementById("profile-pic-input").files[0];
+    // Prepare the form data to send to the backend
     const formData = new FormData();
-    formData.append("image", imageFile); // Append the image file
-    formData.append("userId", user._id); // Send the userId to associate the image with the correct user
+    const imageFile = document.getElementById("profile-pic-input").files[0];
+    formData.append("image", imageFile); // Append the image to the form data
 
     try {
+      // Send the image data to the API to upload it
       const response = await fetch("/api/uploadImage", {
         method: "POST",
         body: formData,
@@ -68,9 +69,10 @@ const Account = () => {
 
       const result = await response.json();
       if (result.success) {
+        // Update the user profile with the new image URL
         setUser((prevUser) => ({
           ...prevUser,
-          imageUrl: result.url, // Update the user's profile image in state
+          imageUrl: result.data.imageUrl, // Update with the new image URL from the backend
         }));
         setIsEditing(false);
         setIsProfileUpdated(false);
@@ -130,6 +132,12 @@ const Account = () => {
             className="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-cyan-400 object-cover cursor-pointer"
             onClick={handleProfileClick} // Trigger file input on click
           />
+          {/* Edit Icon (only visible when isEditing is true) */}
+          {isEditing && (
+            <div className="absolute top-0 right-0 w-6 h-6 bg-cyan-400 rounded-full flex items-center justify-center cursor-pointer">
+              <span className="text-black text-xl">+</span> {/* Add icon */}
+            </div>
+          )}
           {/* File input for image upload */}
           {isEditing && (
             <input
@@ -149,32 +157,38 @@ const Account = () => {
             <span className="w-32 font-medium text-gray-300">Email:</span>
             <span className="text-gray-100">{user?.email || "N/A"}</span>
           </div>
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-2 sm:gap-4">
+            <span className="w-32 font-medium text-gray-300">Verified:</span>
+            <span className={`text-${user?.isVerified ? "green" : "red"}-400`}>
+              {user?.isVerified ? "Yes" : "No"}
+            </span>
+          </div>
         </div>
       </div>
       {/* Edit Profile / Cancel / Save Buttons */}
       <div className="flex gap-4 mt-6">
+        {/* Show Cancel or Save based on profile update status */}
         {!isEditing ? (
           <button
             onClick={() => setIsEditing(true)} // Edit button
-            className="px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-white rounded-md"
+            className="bg-cyan-500 text-white py-2 px-4 rounded-lg"
           >
-            Edit Profile Picture
+            Edit Profile
+          </button>
+        ) : isProfileUpdated ? (
+          <button
+            onClick={handleSave} // Save button
+            className="bg-cyan-500 text-white py-2 px-4 rounded-lg"
+          >
+            Update Profile
           </button>
         ) : (
-          <>
-            <button
-              onClick={handleSave} // Save button
-              className="px-4 py-2 bg-green-500 hover:bg-green-400 text-white rounded-md"
-            >
-              Save
-            </button>
-            <button
-              onClick={handleCancel} // Cancel button
-              className="px-4 py-2 bg-red-500 hover:bg-red-400 text-white rounded-md"
-            >
-              Cancel
-            </button>
-          </>
+          <button
+            onClick={handleCancel} // Cancel button
+            className="bg-red-500 text-white py-2 px-4 rounded-lg"
+          >
+            Cancel
+          </button>
         )}
       </div>
     </div>
