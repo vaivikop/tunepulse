@@ -20,9 +20,14 @@ const Account = () => {
       try {
         setLoading(true);
         const res = await getUserInfo(); // Fetch user data from API
-        setUser(res); // Set the user data
+        if (res?.userId) {
+          setUser(res); // Set the user data
+        } else {
+          toast.error('User ID is missing from the response.');
+        }
       } catch (error) {
         console.error('Error fetching user data:', error);
+        toast.error('Error fetching user data.');
       } finally {
         setLoading(false);
       }
@@ -54,10 +59,13 @@ const Account = () => {
   };
 
   const handleSave = async () => {
-    if (!newImage) return; // If there's no new image, do nothing
+    if (!newImage) {
+      toast.error('Please select an image to upload');
+      return; // If there's no new image, do nothing
+    }
     if (!user?.userId) {
       toast.error('User ID is missing');
-      return;
+      return; // If userId is missing, show error
     }
 
     // Prepare the form data to send to the backend
