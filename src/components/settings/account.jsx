@@ -1,17 +1,20 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { getUserInfo } from "@/services/dataAPI"; // Assuming this function fetches the user data
 
 const Account = () => {
-  const [user, setUserData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { status, data } = useSession(); // Session state from next-auth
+  const [user, setUser] = useState(null); // Local state to store user data
+  const [loading, setLoading] = useState(true); // Loading state to show loading spinner
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await fetch("/api/userInfo"); // Updated API endpoint
-        const data = await response.json();
-        setUserData(data);
+        setLoading(true);
+        const res = await getUserInfo(); // Fetch user data from API
+        setUser(res); // Set the user data
       } catch (error) {
         console.error("Error fetching user data:", error);
       } finally {
@@ -19,15 +22,17 @@ const Account = () => {
       }
     };
 
-    fetchUser();
-  }, []);
+    if (status === "authenticated") {
+      fetchUser(); // Fetch user data only if authenticated
+    }
+  }, [status]);
 
   if (loading) {
-    return <p className="text-center text-cyan-400">Loading...</p>;
+    return <div className="ml-16"><span className="loading"></span></div>; // Display loading spinner while fetching data
   }
 
   if (!user) {
-    return <p className="text-center text-red-500">Failed to load user data.</p>;
+    return <p className="text-center text-red-500">Failed to load user data.</p>; // If no user data
   }
 
   return (
@@ -35,7 +40,7 @@ const Account = () => {
       <h2 className="text-2xl text-cyan-400 font-semibold mb-6 text-center">Account Details</h2>
       <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
         <img
-          src={user?.imageUrl || "https://api.dicebear.com/6.x/thumbs/svg"}
+          src={user?.imageUrl || "https://api.dicebear.com/6.x/thumbs/svg"} // Default to Dicebear image if not available
           alt="Profile"
           className="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-cyan-400 object-cover"
         />
