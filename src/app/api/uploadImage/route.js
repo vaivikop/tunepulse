@@ -1,5 +1,5 @@
 // /pages/api/uploadImage.js
-import cloudinary from '../../utils/cloudinaryConfig';
+import cloudinary from '@/utils/cloudinaryConfig';
 
 export default async function handler(req, res) {
   if (req.method === 'POST') {
