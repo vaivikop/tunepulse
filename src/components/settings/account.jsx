@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { getUserInfo } from '@/services/dataAPI'; // Assuming this function fetches the user data
 import { useRouter } from 'next/navigation'; // Import router to redirect
+import { toast } from 'react-hot-toast'; // Import toast for notifications
 
 const Account = () => {
   const { status, data } = useSession(); // Session state from next-auth
@@ -55,33 +56,48 @@ const Account = () => {
   const handleSave = async () => {
     if (!newImage) return; // If there's no new image, do nothing
 
-    // Prepare the form data to send to the backend
-    const formData = new FormData();
+    // Get the selected image file and convert it to base64
     const imageFile = document.getElementById('profile-pic-input').files[0];
-    formData.append('image', imageFile); // Append the image to the form data
+    const reader = new FileReader();
 
-    try {
-      // Send the image data to the API to upload it
-      const response = await fetch('/api/uploadImage', {
-        method: 'POST',
-        body: formData,
-      });
+    reader.onloadend = async () => {
+      const base64Image = reader.result.split(',')[1]; // Extract base64 data from the result
 
-      const result = await response.json();
-      if (result.success) {
-        // Update the user profile with the new image URL
-        setUser((prevUser) => ({
-          ...prevUser,
-          imageUrl: result.data.imageUrl, // Update with the new image URL from the backend
-        }));
-        setIsEditing(false);
-        setIsProfileUpdated(false);
-      } else {
-        alert('Failed to upload image');
+      try {
+        // Send the base64 image data to the API to upload it
+        const response = await fetch('/api/uploadImage', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            image: base64Image,
+            userId: user._id, // Assuming user._id is the unique user ID
+          }),
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          // Update the user profile with the new image URL
+          setUser((prevUser) => ({
+            ...prevUser,
+            imageUrl: result.imageUrl, // Update with the new image URL from the backend
+          }));
+          setIsEditing(false);
+          setIsProfileUpdated(false);
+          toast.success("Profile picture updated successfully!");
+        } else {
+          toast.error("Failed to upload image: " + result.message);
+        }
+      } catch (error) {
+        console.error('Error uploading image:', error);
+        toast.error("Error uploading image: " + error?.message || "Unknown error");
       }
-    } catch (error) {
-      console.error('Error uploading image:', error);
-      alert('Error uploading image');
+    };
+
+    if (imageFile) {
+      reader.readAsDataURL(imageFile); // Convert the selected image file to base64
     }
   };
 
