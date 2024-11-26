@@ -13,6 +13,7 @@ export async function POST(req) {
     // Validate the incoming data
     if (!image || !userId) {
       console.error("Error: Missing image or userId");
+      toast.error("Image or userId missing");
       return new Response(
         JSON.stringify({ success: false, message: 'Image or userId missing' }),
         { status: 400, headers: { 'Content-Type': 'application/json' } }
