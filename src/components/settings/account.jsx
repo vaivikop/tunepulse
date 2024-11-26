@@ -112,7 +112,6 @@ const Account = () => {
       reader.readAsDataURL(imageFile); // Convert the selected image file to base64
     }
   };
-  
 
   if (status === 'unauthenticated') {
     return (
@@ -185,6 +184,10 @@ const Account = () => {
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-2 sm:gap-4 border-b border-gray-600 pb-4">
             <span className="w-32 font-medium text-gray-300">Email:</span>
             <span className="text-gray-100">{user?.email || 'N/A'}</span>
+          </div>
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-2 sm:gap-4 border-b border-gray-600 pb-4">
+            <span className="w-32 font-medium text-gray-300">User ID:</span>
+            <span className="text-gray-100">{user?._id || 'N/A'}</span> {/* Display User ID */}
           </div>
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-2 sm:gap-4">
             <span className="w-32 font-medium text-gray-300">Verified:</span>
