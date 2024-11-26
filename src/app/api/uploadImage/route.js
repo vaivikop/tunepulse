@@ -1,61 +1,50 @@
-import cloudinary from '@/utils/cloudinaryConfig'; // Cloudinary configuration
-import User from '@/models/User'; // User model
-import dbConnect from '@/utils/dbconnect'; // MongoDB connection utility
-import { toast } from 'react-hot-toast'; // Toast for client-side feedback
+import { NextResponse } from 'next/server';
+import cloudinary from 'cloudinary';
+import { getServerSession } from 'next-auth';
+import { updateUserProfile } from '@/services/dataAPI'; // Assuming this is the function to update user data in MongoDB
 
-// POST handler to upload image
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
 export async function POST(req) {
   try {
-    // Extract image and userId from the request body
-    const { image, userId } = await req.json();
-    console.log("Received Image and User ID:", { image, userId });
-
-    // Validate the incoming data
-    if (!image || !userId) {
-      console.error("Error: Missing image or userId");
-      toast.error("Image or userId missing");
-      return new Response(
-        JSON.stringify({ success: false, message: 'Image or userId missing' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
-      );
+    // Get the session and user
+    const session = await getServerSession();
+    if (!session || !session.user) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    // Connect to the database
-    console.log("Connecting to database...");
-    await dbConnect();
+    const userId = session.user.id; // Assuming you store user id in session
 
-    // Upload the image to Cloudinary
-    console.log("Uploading image to Cloudinary...");
-    const uploadResponse = await cloudinary.uploader.upload(image, {
-      folder: 'profile_pics',
-      public_id: `profile_${userId}`, // Unique public_id for each user's profile
-      overwrite: true, // Overwrite any existing image with the same public_id
+    // Extract image from form-data
+    const formData = await req.formData();
+    const imageFile = formData.get('image');
+
+    if (!imageFile) {
+      return NextResponse.json({ error: 'No image uploaded' }, { status: 400 });
+    }
+
+    // Upload image to Cloudinary
+    const uploadResponse = await cloudinary.v2.uploader.upload(imageFile.stream(), {
+      folder: 'user_profiles', // Optional: Cloudinary folder for user images
+      allowed_formats: ['jpg', 'jpeg', 'png'],
+      transformation: [{ width: 300, height: 300, crop: 'fill' }], // Optional: Resize the image
     });
-    console.log("Cloudinary upload response:", uploadResponse);
 
-    // Update the user's image URL in MongoDB
-    console.log("Updating user's image URL in the database...");
-    const updatedUser = await User.findByIdAndUpdate(
-      userId, 
-      { imageUrl: uploadResponse.secure_url }, 
-      { new: true }
-    );
-    console.log("Updated user:", updatedUser);
+    const imageUrl = uploadResponse.secure_url; // Get the URL of the uploaded image
 
-    // Return the updated image URL and user data
-    return new Response(
-      JSON.stringify({ success: true, imageUrl: uploadResponse.secure_url, user: updatedUser }),
-      { status: 200, headers: { 'Content-Type': 'application/json' } }
-    );
+    // Update user's profile with the new image URL in the database
+    const updatedUser = await updateUserProfile(userId, { imageUrl });
+
+    return NextResponse.json({ imageUrl, user: updatedUser }, { status: 200 });
   } catch (error) {
-    console.error("Error uploading image:", error);
-
-    // Show toast notification for the error
-    toast.error("Error uploading image: " + (error?.message || "Unknown error"));
-
-    return new Response(
-      JSON.stringify({ success: false, message: 'Error uploading image' }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
+    console.error('Error uploading image and updating profile:', error);
+    return NextResponse.json(
+      { error: 'Error uploading image and updating profile' },
+      { status: 500 }
     );
   }
 }

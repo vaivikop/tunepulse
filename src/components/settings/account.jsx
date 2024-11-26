@@ -2,9 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { getUserInfo, updateUserProfile } from '@/services/dataAPI'; // Assuming this function fetches and updates user data
+import { getUserInfo, updateUserProfile } from '@/services/dataAPI'; // Assuming these functions fetch and update user data
 import { useRouter } from 'next/navigation'; // Import router to redirect
 import { toast } from 'react-hot-toast'; // Import toast for notifications
+import axios from 'axios'; // For making API requests
 
 const Account = () => {
   const { status, data } = useSession(); // Session state from next-auth
@@ -58,43 +59,36 @@ const Account = () => {
       toast.error("No new image selected"); // Show error toast if no new image
       return; // If there's no new image, do nothing
     }
-
-    // Get the selected image file and convert it to base64
+  
+    // Get the selected image file
     const imageFile = document.getElementById('profile-pic-input').files[0];
-    const reader = new FileReader();
-
-    reader.onloadend = async () => {
-      const base64Image = reader.result.split(',')[1]; // Extract base64 data from the result
-      console.log("Base64 Image: ", base64Image); // Log the base64 image data for debugging
-
-      // Ensure we are sending both image and user data
-      if (!base64Image) {
-        toast.error("Missing image data"); // Error if image is missing
-        return;
-      }
-
-      try {
-        // Send the base64 image data to the API to update the user's profile
-        const updatedUser = await updateUserProfile({
-          ...user, // Keep other user data
-          imageUrl: base64Image, // Update imageUrl with new base64 image
-        });
-
-        // Update the user state with the updated data
-        setUser(updatedUser);
+    const formData = new FormData();
+    formData.append('image', imageFile);
+  
+    try {
+      // Send the image file to the merged uploadImage API
+      const response = await fetch('/api/uploadImage', {
+        method: 'POST',
+        body: formData,
+      });
+  
+      const data = await response.json();
+  
+      if (response.ok) {
+        // Successfully updated profile
+        setUser(data.user);
         setIsEditing(false);
         setIsProfileUpdated(false);
-        toast.success("Profile picture updated successfully!"); // Success toast
-      } catch (error) {
-        console.error("Error updating profile:", error);
-        toast.error("Error updating profile: " + (error?.message || "Unknown error")); // Error toast for any update error
+        toast.success("Profile picture updated successfully!");
+      } else {
+        toast.error(data.error || 'Error updating profile');
       }
-    };
-
-    if (imageFile) {
-      reader.readAsDataURL(imageFile); // Convert the selected image file to base64
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      toast.error("Error updating profile: " + (error?.message || "Unknown error"));
     }
   };
+  
 
   if (status === 'unauthenticated') {
     return (
