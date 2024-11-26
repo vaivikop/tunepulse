@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
-import { getUserInfo } from "@/services/dataAPI"; // Assuming this function fetches the user data
-import { useRouter } from "next/navigation"; // Import router to redirect
+import React, { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
+import { getUserInfo } from '@/services/dataAPI'; // Assuming this function fetches the user data
+import { useRouter } from 'next/navigation'; // Import router to redirect
 
 const Account = () => {
   const { status, data } = useSession(); // Session state from next-auth
@@ -21,19 +21,19 @@ const Account = () => {
         const res = await getUserInfo(); // Fetch user data from API
         setUser(res); // Set the user data
       } catch (error) {
-        console.error("Error fetching user data:", error);
+        console.error('Error fetching user data:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    if (status === "authenticated") {
+    if (status === 'authenticated') {
       fetchUser(); // Fetch user data only if authenticated
     }
   }, [status]);
 
   const handleProfileClick = () => {
-    if (status === "authenticated") {
+    if (status === 'authenticated') {
       setIsEditing(true); // Show file input when profile picture is clicked
     }
   };
@@ -57,13 +57,13 @@ const Account = () => {
 
     // Prepare the form data to send to the backend
     const formData = new FormData();
-    const imageFile = document.getElementById("profile-pic-input").files[0];
-    formData.append("image", imageFile); // Append the image to the form data
+    const imageFile = document.getElementById('profile-pic-input').files[0];
+    formData.append('image', imageFile); // Append the image to the form data
 
     try {
       // Send the image data to the API to upload it
-      const response = await fetch("/api/uploadImage", {
-        method: "POST",
+      const response = await fetch('/api/uploadImage', {
+        method: 'POST',
         body: formData,
       });
 
@@ -77,21 +77,21 @@ const Account = () => {
         setIsEditing(false);
         setIsProfileUpdated(false);
       } else {
-        alert("Failed to upload image");
+        alert('Failed to upload image');
       }
     } catch (error) {
-      console.error("Error uploading image:", error);
-      alert("Error uploading image");
+      console.error('Error uploading image:', error);
+      alert('Error uploading image');
     }
   };
 
-  if (status === "unauthenticated") {
+  if (status === 'unauthenticated') {
     return (
       <div className="text-center text-red-500 mt-16">
         <p>
-          You are not logged in.{" "}
+          You are not logged in.{' '}
           <button
-            onClick={() => router.push("/login")}
+            onClick={() => router.push('/login')}
             className="text-cyan-400 font-semibold hover:underline"
           >
             Please log in first
@@ -127,7 +127,7 @@ const Account = () => {
         <div className="relative">
           {/* Profile Picture */}
           <img
-            src={newImage || user?.imageUrl || "https://api.dicebear.com/6.x/thumbs/svg"} // Show the selected image or fallback to the default
+            src={newImage || user?.imageUrl || 'https://api.dicebear.com/6.x/thumbs/svg'} // Show the selected image or fallback to the default
             alt="Profile"
             className="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-cyan-400 object-cover cursor-pointer"
             onClick={handleProfileClick} // Trigger file input on click
@@ -151,16 +151,16 @@ const Account = () => {
         <div className="flex flex-col gap-4 w-full">
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-2 sm:gap-4 border-b border-gray-600 pb-4">
             <span className="w-32 font-medium text-gray-300">Username:</span>
-            <span className="text-gray-100">{user?.userName || "N/A"}</span>
+            <span className="text-gray-100">{user?.userName || 'N/A'}</span>
           </div>
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-2 sm:gap-4 border-b border-gray-600 pb-4">
             <span className="w-32 font-medium text-gray-300">Email:</span>
-            <span className="text-gray-100">{user?.email || "N/A"}</span>
+            <span className="text-gray-100">{user?.email || 'N/A'}</span>
           </div>
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-2 sm:gap-4">
             <span className="w-32 font-medium text-gray-300">Verified:</span>
-            <span className={`text-${user?.isVerified ? "green" : "red"}-400`}>
-              {user?.isVerified ? "Yes" : "No"}
+            <span className={`text-${user?.isVerified ? 'green' : 'red'}-400`}>
+              {user?.isVerified ? 'Yes' : 'No'}
             </span>
           </div>
         </div>
