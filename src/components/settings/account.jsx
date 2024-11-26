@@ -55,24 +55,24 @@ const Account = () => {
   const handleSave = async () => {
     if (!newImage) return; // If there's no new image, do nothing
 
-    // Prepare image data as base64 to send to the backend
-    const imageFile = document.getElementById("profile-pic-input").files[0];
+    // Prepare the form data to send to the backend
     const formData = new FormData();
-    formData.append("file", imageFile);
-    formData.append("upload_preset", "your_upload_preset"); // If you use a preset
+    const imageFile = document.getElementById("profile-pic-input").files[0];
+    formData.append("image", imageFile); // Append the image to the form data
 
     try {
-      // Upload to Cloudinary using your API route
-      const response = await fetch("/api/uploadImage", {
+      // Send the image data to the API to upload it
+      const response = await fetch("/api/userInfo", {
         method: "POST",
         body: formData,
       });
 
       const result = await response.json();
       if (result.success) {
+        // Update the user profile with the new image URL
         setUser((prevUser) => ({
           ...prevUser,
-          imageUrl: result.url, // Update the user's profile image in state
+          imageUrl: result.data.imageUrl, // Update with the new image URL from the backend
         }));
         setIsEditing(false);
         setIsProfileUpdated(false);

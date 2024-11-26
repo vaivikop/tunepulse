@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 
+// Define user schema
 const fileSchema = new mongoose.Schema(
   {
     userName: {
@@ -9,13 +10,15 @@ const fileSchema = new mongoose.Schema(
     email: {
       type: String,
       required: true,
+      unique: true, // Make sure email is unique
     },
     password: {
       type: String,
+      required: true, // Make sure password is required
     },
     imageUrl: {
       type: String,
-      required: true,
+      default: "https://api.dicebear.com/6.x/thumbs/svg", // Default image if none provided
     },
     resetPasswordToken: {
       type: String,
@@ -45,5 +48,15 @@ const fileSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-export default mongoose.models.user ||
-  mongoose.model("user", fileSchema, "user");
+// Before saving, ensure password is hashed if it's being updated
+fileSchema.pre('save', async function (next) {
+  if (this.isModified('password')) {
+    const bcrypt = require('bcrypt');
+    const saltRounds = 10;
+    this.password = await bcrypt.hash(this.password, saltRounds);
+  }
+  next();
+});
+
+// Export the user model
+export default mongoose.models.user || mongoose.model("user", fileSchema, "user");
