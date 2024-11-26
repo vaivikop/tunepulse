@@ -5,7 +5,6 @@ import { useSession } from 'next-auth/react';
 import { getUserInfo } from '@/services/dataAPI'; // Assuming this fetches user data
 import { useRouter } from 'next/navigation'; // Import router to redirect
 import { toast } from 'react-hot-toast'; // Import toast for notifications
-import axios from 'axios'; // For making API requests
 
 const Account = () => {
   const { status, data } = useSession(); // Session state from next-auth
@@ -75,13 +74,14 @@ const Account = () => {
       const data = await response.json();
   
       if (response.ok) {
-        // Log the Cloudinary image URL to the console
+        // Log the Cloudinary image URL and update profile
         console.log('Uploaded Image URL:', data.imageUrl); // Log the URL
-        
-        // Hide editing UI and reset states
+
+        // Update the user's profile with the new image URL
+        setUser((prevUser) => ({ ...prevUser, imageUrl: data.imageUrl }));
         setIsEditing(false);
         setIsProfileUpdated(false);
-        toast.success("Image uploaded successfully!");
+        toast.success("Profile picture updated successfully!");
       } else {
         toast.error(data.error || 'Error uploading image');
       }
