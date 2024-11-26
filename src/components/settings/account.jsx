@@ -10,6 +10,8 @@ const Account = () => {
   const [user, setUser] = useState(null); // Local state to store user data
   const [loading, setLoading] = useState(true); // Loading state to show loading skeleton
   const [isEditing, setIsEditing] = useState(false); // State to handle profile pic edit
+  const [newImage, setNewImage] = useState(null); // State to handle new image selection
+  const [isProfileUpdated, setIsProfileUpdated] = useState(false); // State to track profile update
   const router = useRouter();
 
   useEffect(() => {
@@ -38,8 +40,27 @@ const Account = () => {
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
-    // Process the uploaded file here
-    console.log(file);
+    if (file) {
+      setNewImage(URL.createObjectURL(file)); // Create object URL to show selected image
+      setIsProfileUpdated(true); // Mark that the profile has been updated
+    }
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+    setNewImage(null); // Reset image selection
+    setIsProfileUpdated(false); // Reset profile updated status
+  };
+
+  const handleSave = () => {
+    // Implement save logic here, e.g., upload the new image to the backend
+    console.log("Saving profile with new image:", newImage);
+    setIsEditing(false);
+    setIsProfileUpdated(false);
+    setUser((prevUser) => ({
+      ...prevUser,
+      imageUrl: newImage, // Update the user's profile image in state
+    }));
   };
 
   if (status === "unauthenticated") {
@@ -84,11 +105,17 @@ const Account = () => {
         <div className="relative">
           {/* Profile Picture */}
           <img
-            src={user?.imageUrl || "https://api.dicebear.com/6.x/thumbs/svg"} // Default to Dicebear image if not available
+            src={newImage || user?.imageUrl || "https://api.dicebear.com/6.x/thumbs/svg"} // Show the selected image or fallback to the default
             alt="Profile"
             className="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-cyan-400 object-cover cursor-pointer"
             onClick={handleProfileClick} // Trigger file input on click
           />
+          {/* Edit Icon (only visible when isEditing is true) */}
+          {isEditing && (
+            <div className="absolute top-0 right-0 w-6 h-6 bg-cyan-400 rounded-full flex items-center justify-center cursor-pointer">
+              <span className="text-black text-xl">+</span> {/* Add icon */}
+            </div>
+          )}
           {/* File input for image upload */}
           {isEditing && (
             <input
@@ -115,6 +142,25 @@ const Account = () => {
             </span>
           </div>
         </div>
+      </div>
+      {/* Buttons */}
+      <div className="flex gap-4 mt-6">
+        {/* Show Cancel or Save based on profile update status */}
+        {isProfileUpdated ? (
+          <button
+            onClick={handleSave}
+            className="bg-cyan-500 text-white py-2 px-4 rounded-lg"
+          >
+            Update Profile
+          </button>
+        ) : (
+          <button
+            onClick={handleCancel}
+            className="bg-red-500 text-white py-2 px-4 rounded-lg"
+          >
+            Cancel
+          </button>
+        )}
       </div>
     </div>
   );
