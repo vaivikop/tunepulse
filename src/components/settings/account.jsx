@@ -79,6 +79,7 @@ const Account = () => {
       const data = await response.json();
   
       if (data.imageUrl) {
+        console.log('Image URL:', data.imageUrl);  // Log the image URL to the console
         setUser((prevUser) => ({ ...prevUser, imageUrl: data.imageUrl }));
         setIsEditing(false);
         setIsProfileUpdated(false);
@@ -91,6 +92,7 @@ const Account = () => {
       toast.error("Error uploading image: " + (error?.message || "Unknown error"));
     }
   };
+  
   
 
 
