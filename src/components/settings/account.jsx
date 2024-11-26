@@ -3,11 +3,13 @@
 import React, { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { getUserInfo } from "@/services/dataAPI"; // Assuming this function fetches the user data
+import { useRouter } from "next/navigation"; // Import router to redirect
 
 const Account = () => {
   const { status, data } = useSession(); // Session state from next-auth
   const [user, setUser] = useState(null); // Local state to store user data
-  const [loading, setLoading] = useState(true); // Loading state to show loading spinner
+  const [loading, setLoading] = useState(true); // Loading state to show loading skeleton
+  const router = useRouter();
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -27,12 +29,39 @@ const Account = () => {
     }
   }, [status]);
 
+  if (status === "unauthenticated") {
+    return (
+      <div className="text-center text-red-500 mt-16">
+        <p>
+          You are not logged in.{" "}
+          <button
+            onClick={() => router.push("/login")}
+            className="text-cyan-400 font-semibold hover:underline"
+          >
+            Please log in first
+          </button>
+        </p>
+      </div>
+    );
+  }
+
   if (loading) {
-    return <div className="ml-16"><span className="loading"></span></div>; // Display loading spinner while fetching data
+    return (
+      <div className="flex justify-center items-center mt-16">
+        <div className="w-1/2 space-y-4">
+          <div className="h-32 bg-gray-700 rounded-md animate-pulse"></div>
+          <div className="space-y-2">
+            <div className="h-6 bg-gray-700 rounded-md animate-pulse"></div>
+            <div className="h-6 bg-gray-700 rounded-md animate-pulse"></div>
+            <div className="h-6 bg-gray-700 rounded-md animate-pulse"></div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (!user) {
-    return <p className="text-center text-red-500">Failed to load user data.</p>; // If no user data
+    return <p className="text-center text-red-500">Failed to load user data.</p>;
   }
 
   return (
@@ -45,11 +74,11 @@ const Account = () => {
           className="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-cyan-400 object-cover"
         />
         <div className="flex flex-col gap-4 w-full">
-          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-2 sm:gap-4">
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-2 sm:gap-4 border-b border-gray-600 pb-4">
             <span className="w-32 font-medium text-gray-300">Username:</span>
             <span className="text-gray-100">{user?.userName || "N/A"}</span>
           </div>
-          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-2 sm:gap-4">
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-2 sm:gap-4 border-b border-gray-600 pb-4">
             <span className="w-32 font-medium text-gray-300">Email:</span>
             <span className="text-gray-100">{user?.email || "N/A"}</span>
           </div>
