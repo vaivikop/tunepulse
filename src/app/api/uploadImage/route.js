@@ -12,9 +12,13 @@ cloudinary.config({
 
 export async function POST(req) {
   try {
+    // Log the incoming request
+    console.log("Received request to update profile image");
+
     // Get the session and user
     const session = await getServerSession();
     if (!session || !session.user) {
+      console.error("User not authenticated");
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
@@ -25,8 +29,11 @@ export async function POST(req) {
     const imageFile = formData.get('image');
 
     if (!imageFile) {
+      console.error("No image file uploaded");
       return NextResponse.json({ error: 'No image uploaded' }, { status: 400 });
     }
+
+    console.log("Image file received:", imageFile);
 
     // Upload image to Cloudinary
     const uploadResponse = await cloudinary.v2.uploader.upload(imageFile.stream(), {
@@ -36,12 +43,15 @@ export async function POST(req) {
     });
 
     const imageUrl = uploadResponse.secure_url; // Get the URL of the uploaded image
+    console.log("Image uploaded to Cloudinary:", imageUrl);
 
     // Connect to the database
     await dbConnect();
 
     // Update user's profile with the new image URL in the database
     const updatedUser = await User.findByIdAndUpdate(userId, { imageUrl }, { new: true });
+
+    console.log("User profile updated:", updatedUser);
 
     return NextResponse.json({ imageUrl, user: updatedUser }, { status: 200 });
   } catch (error) {
