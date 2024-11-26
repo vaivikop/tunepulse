@@ -1,4 +1,4 @@
-'use client';
+'use client'; 
 
 import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
@@ -55,7 +55,7 @@ const Account = () => {
 
   const handleSave = async () => {
     if (!newImage) {
-      console.error("No new image selected");
+      toast.error("No new image selected"); // Show error toast if no new image
       return; // If there's no new image, do nothing
     }
   
@@ -70,8 +70,7 @@ const Account = () => {
   
       // Ensure we are sending both image and userId
       if (!base64Image || !user?.$oid) {
-        console.error("Missing image or user ID");
-        alert("Missing image or user ID");
+        toast.error("Missing image or user ID"); // Error if image or user ID is missing
         return;
       }
   
@@ -99,13 +98,13 @@ const Account = () => {
           }));
           setIsEditing(false);
           setIsProfileUpdated(false);
-          toast.success("Profile picture updated successfully!");
+          toast.success("Profile picture updated successfully!"); // Success toast
         } else {
-          toast.error("Failed to upload image: " + result.message);
+          toast.error("Failed to upload image: " + result.message); // Error toast if upload fails
         }
       } catch (error) {
         console.error("Error uploading image:", error);
-        toast.error("Error uploading image: " + (error?.message || "Unknown error"));
+        toast.error("Error uploading image: " + (error?.message || "Unknown error")); // Error toast for any upload error
       }
     };
   
