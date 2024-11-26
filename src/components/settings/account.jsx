@@ -20,7 +20,7 @@ const Account = () => {
       try {
         setLoading(true);
         const res = await getUserInfo(); // Fetch user data from API
-        if (res?.$oid) {
+        if (res && res._id) {
           setUser(res); // Set the user data
         } else {
           toast.error('User ID is missing from the response.');
@@ -63,7 +63,7 @@ const Account = () => {
       toast.error('Please select an image to upload');
       return; // If there's no new image, do nothing
     }
-    if (!user?.userId) {
+    if (!user?._id) {
       toast.error('User ID is missing');
       return; // If userId is missing, show error
     }
@@ -72,7 +72,7 @@ const Account = () => {
     const formData = new FormData();
     const imageFile = document.getElementById('profile-pic-input').files[0];
     formData.append('image', imageFile); // Append the image to the form data
-    formData.append('userId', user?.userId); // Append userId from user data
+    formData.append('userId', user?._id); // Use _id as the userId
 
     try {
       // Send the image data to the API to upload it
