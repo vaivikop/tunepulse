@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { getUserInfo, updateUserProfile } from '@/services/dataAPI'; // Assuming these functions fetch and update user data
+import { getUserInfo } from '@/services/dataAPI'; // Assuming this fetches user data
 import { useRouter } from 'next/navigation'; // Import router to redirect
 import { toast } from 'react-hot-toast'; // Import toast for notifications
 import axios from 'axios'; // For making API requests
@@ -75,21 +75,21 @@ const Account = () => {
       const data = await response.json();
   
       if (response.ok) {
-        // Successfully updated profile
-        setUser(data.user);
+        // Log the Cloudinary image URL to the console
+        console.log('Uploaded Image URL:', data.imageUrl); // Log the URL
+        
+        // Hide editing UI and reset states
         setIsEditing(false);
         setIsProfileUpdated(false);
-        toast.success("Profile picture updated successfully!");
+        toast.success("Image uploaded successfully!");
       } else {
-        toast.error(data.error || 'Error updating profile');
+        toast.error(data.error || 'Error uploading image');
       }
     } catch (error) {
-      console.error("Error updating profile:", error);
-      toast.error("Error updating profile: " + (error?.message || "Unknown error"));
+      console.error("Error uploading image:", error);
+      toast.error("Error uploading image: " + (error?.message || "Unknown error"));
     }
   };
-  
-  
 
   if (status === 'unauthenticated') {
     return (
