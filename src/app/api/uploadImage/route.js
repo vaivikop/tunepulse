@@ -1,6 +1,6 @@
 import { v2 as cloudinary } from 'cloudinary';
 import User from '@/models/User'; // Assuming User model is defined for MongoDB
-import connectDB from '@/utils/connectDB'; // Assuming you have a MongoDB connection utility
+import connectDB from '@/utils/dbconnect'; // Assuming you have a MongoDB connection utility
 
 // Configure Cloudinary (if not done already)
 cloudinary.config({
