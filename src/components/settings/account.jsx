@@ -66,10 +66,10 @@ const Account = () => {
     reader.onloadend = async () => {
       const base64Image = reader.result.split(',')[1]; // Extract base64 data from the result
       console.log("Base64 Image: ", base64Image); // Log the base64 image data for debugging
-      console.log("User ID: ", user?._id); // Log the userId for debugging
+      console.log("User ID: ", user?.$oid); // Log the userId for debugging
   
       // Ensure we are sending both image and userId
-      if (!base64Image || !user?._id) {
+      if (!base64Image || !user?.$oid) {
         console.error("Missing image or user ID");
         alert("Missing image or user ID");
         return;
@@ -84,7 +84,7 @@ const Account = () => {
           },
           body: JSON.stringify({
             image: base64Image,
-            userId: user._id, // Pass user ID
+            userId: user.$oid, // Pass user ID
           }),
         });
   
