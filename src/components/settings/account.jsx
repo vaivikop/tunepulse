@@ -52,15 +52,37 @@ const Account = () => {
     setIsProfileUpdated(false); // Reset profile updated status
   };
 
-  const handleSave = () => {
-    // Implement save logic here, e.g., upload the new image to the backend
-    console.log("Saving profile with new image:", newImage);
-    setIsEditing(false);
-    setIsProfileUpdated(false);
-    setUser((prevUser) => ({
-      ...prevUser,
-      imageUrl: newImage, // Update the user's profile image in state
-    }));
+  const handleSave = async () => {
+    if (!newImage) return; // If there's no new image, do nothing
+
+    // Prepare image data as base64 to send to the backend
+    const imageFile = document.getElementById("profile-pic-input").files[0];
+    const formData = new FormData();
+    formData.append("file", imageFile);
+    formData.append("upload_preset", "your_upload_preset"); // If you use a preset
+
+    try {
+      // Upload to Cloudinary using your API route
+      const response = await fetch("/api/uploadImage", {
+        method: "POST",
+        body: formData,
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        setUser((prevUser) => ({
+          ...prevUser,
+          imageUrl: result.url, // Update the user's profile image in state
+        }));
+        setIsEditing(false);
+        setIsProfileUpdated(false);
+      } else {
+        alert("Failed to upload image");
+      }
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      alert("Error uploading image");
+    }
   };
 
   if (status === "unauthenticated") {
