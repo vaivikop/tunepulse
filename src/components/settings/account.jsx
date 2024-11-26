@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 
 const Account = () => {
-  const [userData, setUserData] = useState(null);
+  const [user, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -26,7 +26,7 @@ const Account = () => {
     return <p className="text-center text-cyan-400">Loading...</p>;
   }
 
-  if (!userData) {
+  if (!user) {
     return <p className="text-center text-red-500">Failed to load user data.</p>;
   }
 
@@ -35,23 +35,23 @@ const Account = () => {
       <h2 className="text-2xl text-cyan-400 font-semibold mb-6 text-center">Account Details</h2>
       <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
         <img
-          src={userData?.imageUrl || "https://api.dicebear.com/6.x/thumbs/svg"}
+          src={user?.imageUrl || "https://api.dicebear.com/6.x/thumbs/svg"}
           alt="Profile"
           className="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-cyan-400 object-cover"
         />
         <div className="flex flex-col gap-4 w-full">
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-2 sm:gap-4">
             <span className="w-32 font-medium text-gray-300">Username:</span>
-            <span className="text-gray-100">{userData?.userName || "N/A"}</span>
+            <span className="text-gray-100">{user?.userName || "N/A"}</span>
           </div>
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-2 sm:gap-4">
             <span className="w-32 font-medium text-gray-300">Email:</span>
-            <span className="text-gray-100">{userData?.email || "N/A"}</span>
+            <span className="text-gray-100">{user?.email || "N/A"}</span>
           </div>
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-2 sm:gap-4">
             <span className="w-32 font-medium text-gray-300">Verified:</span>
-            <span className={`text-${userData?.isVerified ? "green" : "red"}-400`}>
-              {userData?.isVerified ? "Yes" : "No"}
+            <span className={`text-${user?.isVerified ? "green" : "red"}-400`}>
+              {user?.isVerified ? "Yes" : "No"}
             </span>
           </div>
         </div>
