@@ -55,41 +55,44 @@ const Account = () => {
 
   const handleSave = async () => {
     if (!newImage) {
-      toast.error("No new image selected"); // Show error toast if no new image
-      return; // If there's no new image, do nothing
+      toast.error("No new image selected");
+      return;
     }
   
-    // Get the selected image file
     const imageFile = document.getElementById('profile-pic-input').files[0];
     const formData = new FormData();
     formData.append('image', imageFile);
   
     try {
-      // Send the image file to the merged uploadImage API
       const response = await fetch('/api/uploadImage', {
         method: 'POST',
         body: formData,
       });
   
+      // Check if the response is ok
+      if (!response.ok) {
+        const errorData = await response.json();
+        toast.error(errorData.error || 'Error uploading image');
+        return;
+      }
+  
       const data = await response.json();
   
-      if (response.ok) {
-        // Log the Cloudinary image URL and update profile
-        console.log('Uploaded Image URL:', data.imageUrl); // Log the URL
-
-        // Update the user's profile with the new image URL
+      if (data.imageUrl) {
         setUser((prevUser) => ({ ...prevUser, imageUrl: data.imageUrl }));
         setIsEditing(false);
         setIsProfileUpdated(false);
         toast.success("Profile picture updated successfully!");
       } else {
-        toast.error(data.error || 'Error uploading image');
+        toast.error("Image upload failed");
       }
     } catch (error) {
       console.error("Error uploading image:", error);
       toast.error("Error uploading image: " + (error?.message || "Unknown error"));
     }
   };
+  
+
 
   if (status === 'unauthenticated') {
     return (
