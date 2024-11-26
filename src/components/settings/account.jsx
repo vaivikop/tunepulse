@@ -47,7 +47,7 @@ const Account = () => {
   };
 
   const handleCancel = () => {
-    setIsEditing(false);
+    setIsEditing(false); // Reset the editing state
     setNewImage(null); // Reset image selection
     setIsProfileUpdated(false); // Reset profile updated status
   };
@@ -143,19 +143,26 @@ const Account = () => {
           </div>
         </div>
       </div>
-      {/* Buttons */}
+      {/* Edit Profile / Cancel / Save Buttons */}
       <div className="flex gap-4 mt-6">
         {/* Show Cancel or Save based on profile update status */}
-        {isProfileUpdated ? (
+        {!isEditing ? (
           <button
-            onClick={handleSave}
+            onClick={() => setIsEditing(true)} // Edit button
+            className="bg-cyan-500 text-white py-2 px-4 rounded-lg"
+          >
+            Edit Profile
+          </button>
+        ) : isProfileUpdated ? (
+          <button
+            onClick={handleSave} // Save button
             className="bg-cyan-500 text-white py-2 px-4 rounded-lg"
           >
             Update Profile
           </button>
         ) : (
           <button
-            onClick={handleCancel}
+            onClick={handleCancel} // Cancel button
             className="bg-red-500 text-white py-2 px-4 rounded-lg"
           >
             Cancel
