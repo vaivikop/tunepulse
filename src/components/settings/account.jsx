@@ -1,8 +1,8 @@
-'use client'; 
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { getUserInfo } from '@/services/dataAPI'; // Assuming this function fetches the user data
+import { getUserInfo, updateUserProfile } from '@/services/dataAPI'; // Assuming this function fetches and updates user data
 import { useRouter } from 'next/navigation'; // Import router to redirect
 import { toast } from 'react-hot-toast'; // Import toast for notifications
 
@@ -58,56 +58,39 @@ const Account = () => {
       toast.error("No new image selected"); // Show error toast if no new image
       return; // If there's no new image, do nothing
     }
-  
+
     // Get the selected image file and convert it to base64
     const imageFile = document.getElementById('profile-pic-input').files[0];
     const reader = new FileReader();
-  
+
     reader.onloadend = async () => {
       const base64Image = reader.result.split(',')[1]; // Extract base64 data from the result
       console.log("Base64 Image: ", base64Image); // Log the base64 image data for debugging
-      console.log("User ID: ", user?.$oid); // Log the userId for debugging
-  
-      // Ensure we are sending both image and userId
-      if (!base64Image || !user?.$oid) {
-        toast.error("Missing image or user ID"); // Error if image or user ID is missing
+
+      // Ensure we are sending both image and user data
+      if (!base64Image) {
+        toast.error("Missing image data"); // Error if image is missing
         return;
       }
-  
+
       try {
-        // Send the base64 image data and userId to the API to upload it
-        const response = await fetch('/api/uploadImage', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            image: base64Image,
-            userId: user.$oid, // Pass user ID
-          }),
+        // Send the base64 image data to the API to update the user's profile
+        const updatedUser = await updateUserProfile({
+          ...user, // Keep other user data
+          imageUrl: base64Image, // Update imageUrl with new base64 image
         });
-  
-        const result = await response.json();
-        console.log("API Response:", result); // Log the response for debugging
-  
-        if (result.success) {
-          // Update the user profile with the new image URL
-          setUser((prevUser) => ({
-            ...prevUser,
-            imageUrl: result.imageUrl, // Update with the new image URL from the backend
-          }));
-          setIsEditing(false);
-          setIsProfileUpdated(false);
-          toast.success("Profile picture updated successfully!"); // Success toast
-        } else {
-          toast.error("Failed to upload image: " + result.message); // Error toast if upload fails
-        }
+
+        // Update the user state with the updated data
+        setUser(updatedUser);
+        setIsEditing(false);
+        setIsProfileUpdated(false);
+        toast.success("Profile picture updated successfully!"); // Success toast
       } catch (error) {
-        console.error("Error uploading image:", error);
-        toast.error("Error uploading image: " + (error?.message || "Unknown error")); // Error toast for any upload error
+        console.error("Error updating profile:", error);
+        toast.error("Error updating profile: " + (error?.message || "Unknown error")); // Error toast for any update error
       }
     };
-  
+
     if (imageFile) {
       reader.readAsDataURL(imageFile); // Convert the selected image file to base64
     }
@@ -185,10 +168,6 @@ const Account = () => {
             <span className="w-32 font-medium text-gray-300">Email:</span>
             <span className="text-gray-100">{user?.email || 'N/A'}</span>
           </div>
-          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-2 sm:gap-4 border-b border-gray-600 pb-4">
-            <span className="w-32 font-medium text-gray-300">User ID:</span>
-            <span className="text-gray-100">{user?._id || 'N/A'}</span> {/* Display User ID */}
-          </div>
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-2 sm:gap-4">
             <span className="w-32 font-medium text-gray-300">Verified:</span>
             <span className={`text-${user?.isVerified ? 'green' : 'red'}-400`}>
@@ -199,7 +178,6 @@ const Account = () => {
       </div>
       {/* Edit Profile / Cancel / Save Buttons */}
       <div className="flex gap-4 mt-6">
-        {/* Show Cancel or Save based on profile update status */}
         {!isEditing ? (
           <button
             onClick={() => setIsEditing(true)} // Edit button
