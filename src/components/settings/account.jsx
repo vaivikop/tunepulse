@@ -20,7 +20,7 @@ const Account = () => {
       try {
         setLoading(true);
         const res = await getUserInfo(); // Fetch user data from API
-        if (res?.userId) {
+        if (res?.$oid) {
           setUser(res); // Set the user data
         } else {
           toast.error('User ID is missing from the response.');
