@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import cloudinary from 'cloudinary';
 import { getServerSession } from 'next-auth';
-import { updateUserProfile } from '@/services/dataAPI'; // Assuming this is the function to update user data in MongoDB
+import dbConnect from '@/utils/dbconnect'; // Assuming this is your MongoDB connection utility
+import User from '@/models/User'; // User model to update user profile
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -36,8 +37,11 @@ export async function POST(req) {
 
     const imageUrl = uploadResponse.secure_url; // Get the URL of the uploaded image
 
+    // Connect to the database
+    await dbConnect();
+
     // Update user's profile with the new image URL in the database
-    const updatedUser = await updateUserProfile(userId, { imageUrl });
+    const updatedUser = await User.findByIdAndUpdate(userId, { imageUrl }, { new: true });
 
     return NextResponse.json({ imageUrl, user: updatedUser }, { status: 200 });
   } catch (error) {
