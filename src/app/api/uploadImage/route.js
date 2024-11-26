@@ -1,4 +1,3 @@
-// /app/api/uploadImage/route.js
 import cloudinary from '@/utils/cloudinaryConfig'; // Cloudinary configuration
 import User from '@/models/User'; // User model
 import dbConnect from '@/utils/dbconnect'; // MongoDB connection utility
@@ -51,7 +50,7 @@ export async function POST(req) {
     console.error("Error uploading image:", error);
 
     // Show toast notification for the error
-    toast.error("Error uploading image: " + error?.message || "Unknown error");
+    toast.error("Error uploading image: " + (error?.message || "Unknown error"));
 
     return new Response(
       JSON.stringify({ success: false, message: 'Error uploading image' }),
