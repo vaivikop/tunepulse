@@ -20,14 +20,9 @@ const Account = () => {
       try {
         setLoading(true);
         const res = await getUserInfo(); // Fetch user data from API
-        if (res && res._id) {
-          setUser(res); // Set the user data
-        } else {
-          toast.error('User ID is missing from the response.');
-        }
+        setUser(res); // Set the user data
       } catch (error) {
         console.error('Error fetching user data:', error);
-        toast.error('Error fetching user data.');
       } finally {
         setLoading(false);
       }
@@ -60,45 +55,65 @@ const Account = () => {
 
   const handleSave = async () => {
     if (!newImage) {
-      toast.error('Please select an image to upload');
+      console.error("No new image selected");
       return; // If there's no new image, do nothing
     }
-    if (!user?._id) {
-      toast.error('User ID is missing');
-      return; // If userId is missing, show error
-    }
-
-    // Prepare the form data to send to the backend
-    const formData = new FormData();
+  
+    // Get the selected image file and convert it to base64
     const imageFile = document.getElementById('profile-pic-input').files[0];
-    formData.append('image', imageFile); // Append the image to the form data
-    formData.append('userId', user?._id); // Use _id as the userId
-
-    try {
-      // Send the image data to the API to upload it
-      const response = await fetch('/api/uploadImage', {
-        method: 'POST',
-        body: formData,
-      });
-
-      const result = await response.json();
-      if (result.success) {
-        // Update the user profile with the new image URL
-        setUser((prevUser) => ({
-          ...prevUser,
-          imageUrl: result.imageUrl, // Update with the new image URL from the backend
-        }));
-        toast.success('Profile updated successfully');
-        setIsEditing(false);
-        setIsProfileUpdated(false);
-      } else {
-        toast.error('Failed to upload image');
+    const reader = new FileReader();
+  
+    reader.onloadend = async () => {
+      const base64Image = reader.result.split(',')[1]; // Extract base64 data from the result
+      console.log("Base64 Image: ", base64Image); // Log the base64 image data for debugging
+      console.log("User ID: ", user?._id); // Log the userId for debugging
+  
+      // Ensure we are sending both image and userId
+      if (!base64Image || !user?._id) {
+        console.error("Missing image or user ID");
+        alert("Missing image or user ID");
+        return;
       }
-    } catch (error) {
-      console.error('Error uploading image:', error);
-      toast.error('Error uploading image');
+  
+      try {
+        // Send the base64 image data and userId to the API to upload it
+        const response = await fetch('/api/uploadImage', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            image: base64Image,
+            userId: user._id, // Pass user ID
+          }),
+        });
+  
+        const result = await response.json();
+        console.log("API Response:", result); // Log the response for debugging
+  
+        if (result.success) {
+          // Update the user profile with the new image URL
+          setUser((prevUser) => ({
+            ...prevUser,
+            imageUrl: result.imageUrl, // Update with the new image URL from the backend
+          }));
+          setIsEditing(false);
+          setIsProfileUpdated(false);
+          toast.success("Profile picture updated successfully!");
+        } else {
+          toast.error("Failed to upload image: " + result.message);
+        }
+      } catch (error) {
+        console.error("Error uploading image:", error);
+        toast.error("Error uploading image: " + (error?.message || "Unknown error"));
+      }
+    };
+  
+    if (imageFile) {
+      reader.readAsDataURL(imageFile); // Convert the selected image file to base64
     }
   };
+  
 
   if (status === 'unauthenticated') {
     return (
