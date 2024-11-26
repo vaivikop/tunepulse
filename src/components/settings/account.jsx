@@ -1,97 +1,160 @@
-"use client";
+'use client';
+import React, { useState, useEffect } from 'react';
+import { signOut, useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { getUserInfo, updateProfilePicture } from '@/services/dataAPI';
+import { MdLogout } from 'react-icons/md';
+import { toast } from 'react-hot-toast';
 
-import React, { useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
-import { getUserInfo } from "@/services/dataAPI"; // Assuming this function fetches the user data
-import { useRouter } from "next/navigation"; // Import router to redirect
-
-const Account = () => {
-  const { status, data } = useSession(); // Session state from next-auth
-  const [user, setUser] = useState(null); // Local state to store user data
-  const [loading, setLoading] = useState(true); // Loading state to show loading skeleton
+const Profile = ({ setShowNav }) => {
   const router = useRouter();
+  const { status, data } = useSession();
+  
+  const [user, setUser] = useState(null);
+  const [newProfilePic, setNewProfilePic] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
-      try {
-        setLoading(true);
-        const res = await getUserInfo(); // Fetch user data from API
-        setUser(res); // Set the user data
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-      } finally {
-        setLoading(false);
-      }
+      const res = await getUserInfo();
+      setUser(res);
     };
-
-    if (status === "authenticated") {
-      fetchUser(); // Fetch user data only if authenticated
-    }
+    fetchUser();
   }, [status]);
 
-  if (status === "unauthenticated") {
-    return (
-      <div className="text-center text-red-500 mt-16">
-        <p>
-          You are not logged in.{" "}
-          <button
-            onClick={() => router.push("/login")}
-            className="text-cyan-400 font-semibold hover:underline"
-          >
-            Please log in first
-          </button>
-        </p>
-      </div>
-    );
-  }
+  const handleProfileClick = () => {
+    if (status === 'authenticated') {
+      setShowNav(false);
+      router.push('/settings'); // Redirects to the settings page
+    }
+  };
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center mt-16">
-        <div className="w-1/2 space-y-4">
-          <div className="h-32 bg-gray-700 rounded-md animate-pulse"></div>
-          <div className="space-y-2">
-            <div className="h-6 bg-gray-700 rounded-md animate-pulse"></div>
-            <div className="h-6 bg-gray-700 rounded-md animate-pulse"></div>
-            <div className="h-6 bg-gray-700 rounded-md animate-pulse"></div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const handleImageChange = (e) => {
+    setNewProfilePic(e.target.files[0]); // Store the selected image
+  };
 
-  if (!user) {
-    return <p className="text-center text-red-500">Failed to load user data.</p>;
-  }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (newProfilePic) {
+      // Handle uploading the new profile picture
+      try {
+        const formData = new FormData();
+        formData.append('image', newProfilePic); // Append the image to form data
+
+        // Make API call to backend
+        const res = await updateProfilePicture(formData);
+
+        if (res.success) {
+          toast.success('Profile picture updated successfully!');
+          setIsEditing(false); // Close the edit form
+          setUser({ ...user, imageUrl: res.imageUrl }); // Update the UI with the new profile picture
+        } else {
+          toast.error('Failed to update profile picture');
+        }
+      } catch (error) {
+        toast.error('Error updating profile picture');
+        console.error(error);
+      }
+    }
+  };
+
+  const handleEditToggle = () => {
+    setIsEditing((prev) => !prev);
+  };
 
   return (
-    <div className="w-full bg-gray-900 text-white p-6 rounded-lg border border-gray-700">
-      <h2 className="text-2xl text-cyan-400 font-semibold mb-6 text-center">Account Details</h2>
-      <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
-        <img
-          src={user?.imageUrl || "https://api.dicebear.com/6.x/thumbs/svg"} // Default to Dicebear image if not available
-          alt="Profile"
-          className="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-cyan-400 object-cover"
-        />
-        <div className="flex flex-col gap-4 w-full">
-          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-2 sm:gap-4 border-b border-gray-600 pb-4">
-            <span className="w-32 font-medium text-gray-300">Username:</span>
-            <span className="text-gray-100">{user?.userName || "N/A"}</span>
-          </div>
-          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-2 sm:gap-4 border-b border-gray-600 pb-4">
-            <span className="w-32 font-medium text-gray-300">Email:</span>
-            <span className="text-gray-100">{user?.email || "N/A"}</span>
-          </div>
-          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-2 sm:gap-4">
-            <span className="w-32 font-medium text-gray-300">Verified:</span>
-            <span className={`text-${user?.isVerified ? "green" : "red"}-400`}>
-              {user?.isVerified ? "Yes" : "No"}
-            </span>
-          </div>
+    <div className="text-white">
+      {status === 'loading' ? (
+        <div className="ml-16">
+          <span className="loading"></span>
         </div>
-      </div>
+      ) : (
+        <div>
+          {status === 'unauthenticated' ? (
+            <div className="flex gap-2 ml-5">
+              <button
+                onClick={() => {
+                  setShowNav(false);
+                  router.push('/login');
+                }}
+                className="border-2 px-3 py-1 m-2 rounded text-lg border-[#00e6e6]"
+              >
+                Login
+              </button>
+              <button
+                onClick={() => {
+                  setShowNav(false);
+                  router.push('/signup');
+                }}
+                className="border-2 px-3 py-1 m-2 rounded text-lg border-[#00e6e6]"
+              >
+                Signup
+              </button>
+            </div>
+          ) : (
+            <div>
+              <div className="flex gap-4 ml-1">
+                <img
+                  src={user?.imageUrl || data?.imageUrl || 'https://api.dicebear.com/6.x/thumbs/svg'}
+                  alt="user"
+                  width={50}
+                  height={50}
+                  className="rounded-full cursor-pointer"
+                  onClick={handleProfileClick} // Event handler for profile click
+                  title="Go to settings"
+                />
+                <div className="flex flex-col gap-1 w-full truncate cursor-pointer" onClick={handleProfileClick}>
+                  <div className="flex justify-between items-center">
+                    <h1 className="text-lg font-semibold">{data?.userName || user?.userName}</h1>
+                    <MdLogout
+                      size={20}
+                      onClick={() => {
+                        setShowNav(false);
+                        signOut();
+                      }}
+                      className="cursor-pointer text-white hover:text-[#00e6e6]"
+                    />
+                  </div>
+                  <h2 className="text-[10px] truncate">{data?.email || user?.email}</h2>
+                </div>
+              </div>
+              <button
+                onClick={handleEditToggle}
+                className="mt-4 bg-[#00e6e6] text-black rounded p-2 hover:bg-[#00c0c0]"
+              >
+                Edit Profile
+              </button>
+              {isEditing && (
+                <div className="mt-4 p-4 border border-gray-300 rounded bg-gray-800">
+                  <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                    <div>
+                      <label htmlFor="profilePic" className="block text-sm font-medium">
+                        Change Profile Picture:
+                      </label>
+                      <input
+                        type="file"
+                        id="profilePic"
+                        name="profilePic"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        className="mt-2 p-2 bg-black text-white border rounded"
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      className="mt-4 bg-[#00e6e6] text-black rounded p-2 hover:bg-[#00c0c0]"
+                    >
+                      Save Changes
+                    </button>
+                  </form>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
 
-export default Account;
+export default Profile;
