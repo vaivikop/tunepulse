@@ -2,9 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { getUserInfo } from '@/services/dataAPI'; // Assuming this fetches user data
-import { useRouter } from 'next/navigation'; // Import router to redirect
 import { toast } from 'react-hot-toast'; // Import toast for notifications
+import { useRouter } from 'next/navigation'; // Import router to redirect
 
 const Account = () => {
   const { status } = useSession(); // Session state from next-auth
@@ -19,10 +18,9 @@ const Account = () => {
     const fetchUser = async () => {
       try {
         setLoading(true);
-        
+
         if (status === 'authenticated') {
           const res = await fetch('/api/userInfo'); // Call user info API
-
           const data = await res.json();
 
           if (data?.success && data?.data) {
@@ -41,6 +39,29 @@ const Account = () => {
 
     fetchUser(); // Fetch user data if authenticated
   }, [status]);
+
+  const handleVerifyAccount = async () => {
+    try {
+      const response = await fetch('/api/verifyAccount', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId: user.userId }), // Send user ID to identify the user
+      });
+
+      const data = await response.json();
+
+      if (data?.success) {
+        toast.success('Verification email sent! Please check your inbox.');
+      } else {
+        toast.error(data?.message || 'Failed to send verification email.');
+      }
+    } catch (error) {
+      console.error('Error sending verification email:', error);
+      toast.error('Error sending verification email');
+    }
+  };
 
   const handleProfileClick = () => {
     if (status === 'authenticated') {
@@ -192,6 +213,7 @@ const Account = () => {
           </div>
         </div>
       </div>
+
       {/* Edit Profile / Cancel / Save Buttons */}
       <div className="flex gap-4 mt-6">
         {!isEditing ? (
@@ -201,22 +223,33 @@ const Account = () => {
           >
             Edit Profile
           </button>
-        ) : isProfileUpdated ? (
-          <button
-            onClick={handleSave} // Save button
-            className="bg-cyan-500 text-white py-2 px-4 rounded-lg"
-          >
-            Update Profile
-          </button>
         ) : (
-          <button
-            onClick={handleCancel} // Cancel button
-            className="bg-red-500 text-white py-2 px-4 rounded-lg"
-          >
-            Cancel
-          </button>
+          <>
+            <button
+              onClick={handleCancel} // Cancel button
+              className="bg-red-500 text-white py-2 px-4 rounded-lg"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSave} // Save button
+              className="bg-green-500 text-white py-2 px-4 rounded-lg"
+            >
+              Save
+            </button>
+          </>
         )}
       </div>
+
+      {/* Show the "Verify Your Account" button if not verified */}
+      {!user?.isVerified && (
+        <button
+          onClick={handleVerifyAccount} // Trigger the account verification
+          className="mt-4 bg-cyan-500 text-white py-2 px-4 rounded-lg"
+        >
+          Verify Your Account
+        </button>
+      )}
     </div>
   );
 };
