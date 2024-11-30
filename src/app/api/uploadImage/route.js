@@ -18,41 +18,31 @@ export async function POST(req) {
     const formData = await req.formData();
     const image = formData.get('image');
     const userId = formData.get('userId');  // Get userId from form data
-    const userName = formData.get('userName'); // Get userName from form data
 
-    if (!userId) {
-      return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
+    if (!image || !userId) {
+      return NextResponse.json({ error: 'Image and User ID are required' }, { status: 400 });
     }
 
-    // Step 3: Find the user in the database
+    // Step 3: Upload the image to Cloudinary
+    const result = await cloudinary.uploader.upload(image, {
+      folder: 'user_profiles', // Specify folder
+    });
+
+    const imageUrl = result.secure_url;
+
+    // Step 4: Find the user in the database
     const user = await User.findById(userId);
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Step 4: Update the user's profile image if a new one is provided
-    let imageUrl = user.imageUrl;
-    if (image) {
-      // Upload the image to Cloudinary
-      const result = await cloudinary.uploader.upload(image, {
-        folder: 'user_profiles', // Specify folder
-      });
-
-      imageUrl = result.secure_url;
-    }
-
-    // Step 5: Update the user's profile details
-    if (userName) {
-      user.userName = userName; // Update the username if it's provided
-    }
-
-    user.imageUrl = imageUrl; // Always update the image URL (even if no new image)
-
+    // Step 5: Update the user's profile image URL
+    user.imageUrl = imageUrl;
     await user.save();
 
-    // Step 6: Respond with the updated user data
-    return NextResponse.json({ success: true, imageUrl, userName: user.userName }, { status: 200 });
+    // Step 6: Respond with the image URL
+    return NextResponse.json({ success: true, imageUrl }, { status: 200 });
   } catch (error) {
-    return NextResponse.json({ error: 'Error updating profile', details: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Error uploading image', details: error.message }, { status: 500 });
   }
 }
