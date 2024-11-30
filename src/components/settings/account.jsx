@@ -76,7 +76,7 @@ const Account = () => {
       const base64Image = reader.result; // This is the base64 string of the image
 
       const formData = new FormData();
-      formData.append('image', imageFile);  // Add the image file
+      formData.append('image', base64Image);  // Add the base64 image string
       formData.append('userId', user.userId);  // Add the userId
 
       try {
