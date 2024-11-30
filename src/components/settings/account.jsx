@@ -58,43 +58,49 @@ const Account = () => {
       toast.error("No new image selected");
       return;
     }
-  
-    const imageFile = document.getElementById('profile-pic-input').files[0];
-    const formData = new FormData();
-    formData.append('image', imageFile);
-  
-    try {
-      const response = await fetch('/api/uploadImage', {
-        method: 'POST',
-        body: formData,
-      });
-  
-      // Check if the response is ok
-      if (!response.ok) {
-        const errorData = await response.json();
-        toast.error(errorData.error || 'Error uploading image');
-        return;
-      }
-  
-      const data = await response.json();
-  
-      if (data.imageUrl) {
-        console.log('Image URL:', data.imageUrl);  // Log the image URL to the console
-        setUser((prevUser) => ({ ...prevUser, imageUrl: data.imageUrl }));
-        setIsEditing(false);
-        setIsProfileUpdated(false);
-        toast.success("Profile picture updated successfully!");
-      } else {
-        toast.error("Image upload failed");
-      }
-    } catch (error) {
-      console.error("Error uploading image:", error);
-      toast.error("Error uploading image: " + (error?.message || "Unknown error"));
-    }
-  };
-  
-  
 
+    const imageFile = document.getElementById('profile-pic-input').files[0];
+    const reader = new FileReader();
+
+    // Convert the image file to base64
+    reader.onloadend = async () => {
+      const base64Image = reader.result; // This is the base64 string of the image
+
+      const formData = new FormData();
+      formData.append('image', base64Image);
+
+      try {
+        const response = await fetch('/api/uploadImage', {
+          method: 'POST',
+          body: formData,
+        });
+
+        // Check if the response is ok
+        if (!response.ok) {
+          const errorData = await response.json();
+          toast.error(errorData.error || 'Error uploading image');
+          return;
+        }
+
+        const data = await response.json();
+
+        if (data.imageUrl) {
+          console.log('Image URL:', data.imageUrl);  // Log the image URL to the console
+          setUser((prevUser) => ({ ...prevUser, imageUrl: data.imageUrl }));
+          setIsEditing(false);
+          setIsProfileUpdated(false);
+          toast.success("Profile picture updated successfully!");
+        } else {
+          toast.error("Image upload failed");
+        }
+      } catch (error) {
+        console.error("Error uploading image:", error);
+        toast.error("Error uploading image: " + (error?.message || "Unknown error"));
+      }
+    };
+
+    reader.readAsDataURL(imageFile); // Convert the image to a base64 string
+  };
 
   if (status === 'unauthenticated') {
     return (
