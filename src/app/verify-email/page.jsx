@@ -10,7 +10,7 @@ const VerifyEmail = () => {
   const token = searchParams.get('token'); // Get token from the URL
   const [loading, setLoading] = useState(true);
   const [verificationStatus, setVerificationStatus] = useState('');
-  
+
   useEffect(() => {
     if (token) {
       const verifyAccount = async () => {
@@ -56,16 +56,28 @@ const VerifyEmail = () => {
   }, [token, router]);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="w-32 h-32 border-4 border-t-transparent border-cyan-500 border-solid rounded-full animate-spin"></div>
+      </div>
+    );
   }
 
   return (
-    <div className="w-full bg-gray-900 text-white p-6 rounded-lg border border-gray-700">
-      <h2 className="text-2xl text-cyan-400 font-semibold mb-6 text-center">Email Verification Status</h2>
+    <div className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 text-white p-8 rounded-lg shadow-xl max-w-md mx-auto mt-20">
+      <h2 className="text-3xl font-bold text-center mb-6">Email Verification Status</h2>
       <div className="text-center">
-        <p className={`text-${verificationStatus === 'Verified' ? 'green' : 'red'}-500`}>
+        <p className={`text-xl font-semibold ${verificationStatus === 'Verified' ? 'text-green-500' : 'text-red-500'}`}>
           {verificationStatus}
         </p>
+      </div>
+      <div className="mt-8 flex justify-center">
+        <button
+          onClick={() => router.push('/login')}
+          className="bg-cyan-700 hover:bg-cyan-600 text-white py-2 px-6 rounded-lg shadow-md transition duration-300"
+        >
+          Go to Login
+        </button>
       </div>
     </div>
   );
