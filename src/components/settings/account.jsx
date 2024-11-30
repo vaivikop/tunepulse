@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { getUserInfo } from '@/services/dataAPI'; // Assuming this fetches user data
 import { useRouter } from 'next/navigation'; // Import router to redirect
 import { toast } from 'react-hot-toast'; // Import toast for notifications
 
@@ -64,30 +63,40 @@ const Account = () => {
   };
 
   const handleSave = async () => {
-    if (newImage || newUsername) {
-      const formData = new FormData();
-      if (newImage) {
-        const imageFile = document.getElementById('profile-pic-input').files[0];
-        const reader = new FileReader();
-
-        reader.onloadend = async () => {
-          const base64Image = reader.result; // This is the base64 string of the image
-          formData.append('image', base64Image);
-          
-          // Send formData to backend to update profile
-          await updateProfile(formData);
-        };
-
-        reader.readAsDataURL(imageFile); // Convert the image to a base64 string
-      }
-
-      if (newUsername) {
-        formData.append('userName', newUsername);
-        // Send formData to backend to update username
-        await updateProfile(formData);
-      }
-    } else {
+    if (!newUsername && !newImage) {
       toast.error('No changes detected');
+      return;
+    }
+
+    // If the username is provided, ensure it's not empty
+    if (newUsername && newUsername.trim() === '') {
+      toast.error('Username cannot be empty');
+      return;
+    }
+
+    const formData = new FormData();
+
+    // Only append image if there's a new image selected
+    if (newImage) {
+      const imageFile = document.getElementById('profile-pic-input').files[0];
+      const reader = new FileReader();
+
+      reader.onloadend = async () => {
+        const base64Image = reader.result; // This is the base64 string of the image
+        formData.append('image', base64Image);
+
+        // Send formData to backend to update profile
+        await updateProfile(formData);
+      };
+
+      reader.readAsDataURL(imageFile); // Convert the image to a base64 string
+    }
+
+    // If the username is provided, append it to formData
+    if (newUsername) {
+      formData.append('userName', newUsername);
+      // Send formData to backend to update username
+      await updateProfile(formData);
     }
   };
 
@@ -106,7 +115,11 @@ const Account = () => {
 
       const data = await response.json();
       if (data.success) {
-        setUser((prevUser) => ({ ...prevUser, userName: newUsername, imageUrl: data.imageUrl }));
+        setUser((prevUser) => ({
+          ...prevUser,
+          userName: newUsername || prevUser.userName, // Update username only if it's new
+          imageUrl: data.imageUrl || prevUser.imageUrl, // Update image only if new image
+        }));
         setIsEditing(false);
         setIsProfileUpdated(false);
         toast.success('Profile updated successfully!');
