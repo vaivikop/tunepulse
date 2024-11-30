@@ -11,6 +11,8 @@ const Account = () => {
   const [user, setUser] = useState(null); // Local state to store user data
   const [loading, setLoading] = useState(true); // Loading state to show loading skeleton
   const [isEditing, setIsEditing] = useState(false); // State to handle profile pic edit
+  const [isEditingUsername, setIsEditingUsername] = useState(false); // State for editing username
+  const [newUsername, setNewUsername] = useState(''); // State to handle new username
   const [newImage, setNewImage] = useState(null); // State to handle new image selection
   const [isProfileUpdated, setIsProfileUpdated] = useState(false); // State to track profile update
   const router = useRouter();
@@ -27,6 +29,7 @@ const Account = () => {
 
           if (data?.success && data?.data) {
             setUser(data.data); // Set the user data (including userId, username, etc.)
+            setNewUsername(data.data.userName); // Set the initial username
           } else {
             toast.error('Failed to fetch user info');
           }
@@ -42,6 +45,10 @@ const Account = () => {
     fetchUser(); // Fetch user data if authenticated
   }, [status]);
 
+  const handleUsernameChange = (e) => {
+    setNewUsername(e.target.value); // Update the username state
+  };
+
   const handleProfileClick = () => {
     if (status === 'authenticated') {
       setIsEditing(true); // Show file input when profile picture is clicked
@@ -56,60 +63,60 @@ const Account = () => {
     }
   };
 
-  const handleCancel = () => {
-    setIsEditing(false); // Reset the editing state
-    setNewImage(null); // Reset image selection
-    setIsProfileUpdated(false); // Reset profile updated status
+  const handleSave = async () => {
+    if (newImage || newUsername) {
+      const formData = new FormData();
+      if (newImage) {
+        const imageFile = document.getElementById('profile-pic-input').files[0];
+        const reader = new FileReader();
+
+        reader.onloadend = async () => {
+          const base64Image = reader.result; // This is the base64 string of the image
+          formData.append('image', base64Image);
+          
+          // Send formData to backend to update profile
+          await updateProfile(formData);
+        };
+
+        reader.readAsDataURL(imageFile); // Convert the image to a base64 string
+      }
+
+      if (newUsername) {
+        formData.append('userName', newUsername);
+        // Send formData to backend to update username
+        await updateProfile(formData);
+      }
+    } else {
+      toast.error('No changes detected');
+    }
   };
 
-  const handleSave = async () => {
-    if (!newImage) {
-      toast.error("No new image selected");
-      return;
-    }
+  const updateProfile = async (formData) => {
+    try {
+      const response = await fetch('/api/updateProfile', {
+        method: 'POST',
+        body: formData,
+      });
 
-    const imageFile = document.getElementById('profile-pic-input').files[0];
-    const reader = new FileReader();
-
-    // Convert the image file to base64
-    reader.onloadend = async () => {
-      const base64Image = reader.result; // This is the base64 string of the image
-
-      const formData = new FormData();
-      formData.append('image', base64Image);  // Add the base64 image string
-      formData.append('userId', user.userId);  // Add the userId
-
-      try {
-        const response = await fetch('/api/uploadImage', {
-          method: 'POST',
-          body: formData,
-        });
-
-        // Check if the response is ok
-        if (!response.ok) {
-          const errorData = await response.json();
-          toast.error(errorData.error || 'Error uploading image');
-          return;
-        }
-
-        const data = await response.json();
-
-        if (data.imageUrl) {
-          console.log('Image URL:', data.imageUrl);  // Log the image URL to the console
-          setUser((prevUser) => ({ ...prevUser, imageUrl: data.imageUrl }));
-          setIsEditing(false);
-          setIsProfileUpdated(false);
-          toast.success("Profile picture updated successfully!");
-        } else {
-          toast.error("Image upload failed");
-        }
-      } catch (error) {
-        console.error("Error uploading image:", error);
-        toast.error("Error uploading image: " + (error?.message || "Unknown error"));
+      if (!response.ok) {
+        const errorData = await response.json();
+        toast.error(errorData.error || 'Error updating profile');
+        return;
       }
-    };
 
-    reader.readAsDataURL(imageFile); // Convert the image to a base64 string
+      const data = await response.json();
+      if (data.success) {
+        setUser((prevUser) => ({ ...prevUser, userName: newUsername, imageUrl: data.imageUrl }));
+        setIsEditing(false);
+        setIsProfileUpdated(false);
+        toast.success('Profile updated successfully!');
+      } else {
+        toast.error('Profile update failed');
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      toast.error('Error updating profile');
+    }
   };
 
   if (status === 'unauthenticated') {
@@ -154,18 +161,16 @@ const Account = () => {
         <div className="relative">
           {/* Profile Picture */}
           <img
-            src={newImage || user?.imageUrl || 'https://api.dicebear.com/6.x/thumbs/svg'} // Show the selected image or fallback to the default
+            src={newImage || user?.imageUrl || 'https://api.dicebear.com/6.x/thumbs/svg'}
             alt="Profile"
             className="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-cyan-400 object-cover cursor-pointer"
-            onClick={handleProfileClick} // Trigger file input on click
+            onClick={handleProfileClick}
           />
-          {/* Edit Icon (only visible when isEditing is true) */}
           {isEditing && (
             <div className="absolute top-0 right-0 w-6 h-6 bg-cyan-400 rounded-full flex items-center justify-center cursor-pointer">
-              <span className="text-black text-xl">+</span> {/* Add icon */}
+              <span className="text-black text-xl">+</span>
             </div>
           )}
-          {/* File input for image upload */}
           {isEditing && (
             <input
               type="file"
@@ -178,7 +183,16 @@ const Account = () => {
         <div className="flex flex-col gap-4 w-full">
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-2 sm:gap-4 border-b border-gray-600 pb-4">
             <span className="w-32 font-medium text-gray-300">Username:</span>
-            <span className="text-gray-100">{user?.userName || 'N/A'}</span>
+            {isEditingUsername ? (
+              <input
+                type="text"
+                value={newUsername}
+                onChange={handleUsernameChange}
+                className="text-gray-100 bg-gray-700 p-2 rounded-md"
+              />
+            ) : (
+              <span className="text-gray-100">{user?.userName || 'N/A'}</span>
+            )}
           </div>
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-2 sm:gap-4 border-b border-gray-600 pb-4">
             <span className="w-32 font-medium text-gray-300">Email:</span>
@@ -192,28 +206,20 @@ const Account = () => {
           </div>
         </div>
       </div>
-      {/* Edit Profile / Cancel / Save Buttons */}
       <div className="flex gap-4 mt-6">
         {!isEditing ? (
           <button
-            onClick={() => setIsEditing(true)} // Edit button
+            onClick={() => setIsEditingUsername(true)}
             className="bg-cyan-500 text-white py-2 px-4 rounded-lg"
           >
-            Edit Profile
-          </button>
-        ) : isProfileUpdated ? (
-          <button
-            onClick={handleSave} // Save button
-            className="bg-cyan-500 text-white py-2 px-4 rounded-lg"
-          >
-            Update Profile
+            Edit Username
           </button>
         ) : (
           <button
-            onClick={handleCancel} // Cancel button
-            className="bg-red-500 text-white py-2 px-4 rounded-lg"
+            onClick={handleSave}
+            className="bg-cyan-500 text-white py-2 px-4 rounded-lg"
           >
-            Cancel
+            Save Changes
           </button>
         )}
       </div>
