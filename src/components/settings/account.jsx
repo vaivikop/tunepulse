@@ -19,13 +19,8 @@ const Account = () => {
     const fetchUser = async () => {
       try {
         setLoading(true);
-
-        // Check if session is authenticated and we have the userId
-        if (status === 'authenticated' && data?.user?.id) {
-          const userId = data.user.id;  // Assuming the userId is stored in the session
-          const res = await getUserInfo(userId); // Fetch user data from API using userId
-          setUser(res); // Set the user data
-        }
+        const res = await getUserInfo(); // Fetch user data from API
+        setUser(res); // Set the user data
       } catch (error) {
         console.error('Error fetching user data:', error);
       } finally {
@@ -33,8 +28,10 @@ const Account = () => {
       }
     };
 
-    fetchUser(); // Fetch user data if authenticated
-  }, [status, data]);
+    if (status === 'authenticated') {
+      fetchUser(); // Fetch user data only if authenticated
+    }
+  }, [status]);
 
   const handleProfileClick = () => {
     if (status === 'authenticated') {
@@ -73,7 +70,7 @@ const Account = () => {
       formData.append('image', base64Image);
 
       try {
-        const response = await fetch(`/api/uploadImage?userId=${user.id}`, { // Pass userId in the query string
+        const response = await fetch('/api/uploadImage', {
           method: 'POST',
           body: formData,
         });
