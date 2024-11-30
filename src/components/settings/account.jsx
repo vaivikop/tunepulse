@@ -102,7 +102,7 @@ const Account = () => {
 
   const updateProfile = async (formData) => {
     try {
-      const response = await fetch('/api/updateProfile', {
+      const response = await fetch('/api/uploadImage', {
         method: 'POST',
         body: formData,
       });
