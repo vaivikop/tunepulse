@@ -9,6 +9,7 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+// Handle POST requests (image upload)
 export async function POST(req) {
   try {
     await connectDB(); // Connect to DB
@@ -40,10 +41,32 @@ export async function POST(req) {
     await user.save();
 
     // Respond with the image URL
-    return NextResponse.json({ imageUrl }, { status: 200 });
+    return NextResponse.json({
+      success: true,
+      message: 'Image uploaded and profile updated successfully',
+      imageUrl,
+    }, { status: 200 });
 
   } catch (error) {
     console.error('Error uploading image:', error);
     return NextResponse.json({ error: 'Error uploading image' }, { status: 500 });
   }
+}
+
+// Handle GET requests (metadata display)
+export async function GET() {
+  return NextResponse.json({
+    success: true,
+    message: 'Welcome to the Image Upload API',
+    methods: {
+      POST: {
+        description: 'Uploads an image to Cloudinary and updates the user profile',
+        requiredHeaders: ['user-id'],
+        requiredFormFields: ['image'],
+      },
+      GET: {
+        description: 'Provides metadata about the Image Upload API',
+      },
+    },
+  });
 }
