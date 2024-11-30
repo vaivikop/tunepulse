@@ -9,64 +9,64 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Handle POST requests (image upload)
 export async function POST(req) {
+  console.log('Incoming POST request to /api/uploadImage');
   try {
-    await connectDB(); // Connect to DB
+    // Step 1: Connect to the database
+    console.log('Connecting to the database...');
+    await connectDB();
+    console.log('Database connection successful.');
 
-    const formData = await req.formData(); // Get form data
-    const image = formData.get('image'); // Get the image file
+    // Step 2: Parse form data from the request
+    console.log('Parsing form data...');
+    const formData = await req.formData();
+    const image = formData.get('image');
+    console.log('Form data parsed. Image received:', !!image);
 
     if (!image) {
+      console.error('No image file provided in the request.');
       return NextResponse.json({ error: 'No image file provided' }, { status: 400 });
     }
 
-    // Upload the image to Cloudinary
+    // Step 3: Upload the image to Cloudinary
+    console.log('Uploading image to Cloudinary...');
     const result = await cloudinary.uploader.upload(image, {
-      folder: 'user_profiles', // Optional, specify folder
+      folder: 'user_profiles', // Specify folder
     });
+    console.log('Image uploaded to Cloudinary. URL:', result.secure_url);
 
-    const imageUrl = result.secure_url; // Get the URL of the uploaded image
+    const imageUrl = result.secure_url;
 
-    // Assuming the user is logged in and we have access to the user ID
-    const userId = req.headers.get('user-id'); // Replace with actual user ID logic
-    const user = await User.findById(userId); // Find user in DB
+    // Step 4: Retrieve the user ID from headers
+    console.log('Retrieving user ID from headers...');
+    const userId = req.headers.get('user-id');
+    if (!userId) {
+      console.error('User ID not provided in the request headers.');
+      return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
+    }
+    console.log('User ID:', userId);
 
+    // Step 5: Find the user in the database
+    console.log('Fetching user from database...');
+    const user = await User.findById(userId);
     if (!user) {
+      console.error('User not found in the database.');
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
+    console.log('User found:', user);
 
-    // Update the user's profile image URL
+    // Step 6: Update the user's profile image URL
+    console.log('Updating user profile image URL...');
     user.imageUrl = imageUrl;
     await user.save();
+    console.log('User profile updated successfully.');
 
-    // Respond with the image URL
-    return NextResponse.json({
-      success: true,
-      message: 'Image uploaded and profile updated successfully',
-      imageUrl,
-    }, { status: 200 });
-
+    // Step 7: Respond with the image URL
+    console.log('Sending response with image URL.');
+    return NextResponse.json({ success: true, imageUrl }, { status: 200 });
   } catch (error) {
-    console.error('Error uploading image:', error);
-    return NextResponse.json({ error: 'Error uploading image' }, { status: 500 });
+    // Step 8: Handle errors
+    console.error('Error occurred during image upload:', error);
+    return NextResponse.json({ error: 'Error uploading image', details: error.message }, { status: 500 });
   }
-}
-
-// Handle GET requests (metadata display)
-export async function GET() {
-  return NextResponse.json({
-    success: true,
-    message: 'Welcome to the Image Upload API',
-    methods: {
-      POST: {
-        description: 'Uploads an image to Cloudinary and updates the user profile',
-        requiredHeaders: ['user-id'],
-        requiredFormFields: ['image'],
-      },
-      GET: {
-        description: 'Provides metadata about the Image Upload API',
-      },
-    },
-  });
 }
