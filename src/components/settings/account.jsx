@@ -9,10 +9,9 @@ const Account = () => {
   const { status } = useSession(); // Session state from next-auth
   const [user, setUser] = useState(null); // Local state to store user data
   const [loading, setLoading] = useState(true); // Loading state to show loading skeleton
-  const [isEditing, setIsEditing] = useState(false); // State to handle profile pic edit
-  const [isEditingUsername, setIsEditingUsername] = useState(false); // State for editing username
   const [newUsername, setNewUsername] = useState(''); // State to handle new username
   const [newImage, setNewImage] = useState(null); // State to handle new image selection
+  const [isEditing, setIsEditing] = useState(false); // State for editing image
   const [isProfileUpdated, setIsProfileUpdated] = useState(false); // State to track profile update
   const router = useRouter();
 
@@ -20,12 +19,9 @@ const Account = () => {
     const fetchUser = async () => {
       try {
         setLoading(true);
-        
         if (status === 'authenticated') {
           const res = await fetch('/api/userInfo'); // Call user info API
-
           const data = await res.json();
-
           if (data?.success && data?.data) {
             setUser(data.data); // Set the user data (including userId, username, etc.)
             setNewUsername(data.data.userName); // Set the initial username
@@ -40,7 +36,6 @@ const Account = () => {
         setLoading(false);
       }
     };
-
     fetchUser(); // Fetch user data if authenticated
   }, [status]);
 
@@ -63,46 +58,41 @@ const Account = () => {
   };
 
   const handleSave = async () => {
-    if (!newUsername && !newImage) {
-      toast.error('No changes detected');
-      return;
-    }
-
-    // If the username is provided, ensure it's not empty
-    if (newUsername && newUsername.trim() === '') {
-      toast.error('Username cannot be empty');
-      return;
-    }
-
     const formData = new FormData();
+    if (newUsername || newImage) {
+      // Append the username if it's not empty
+      if (newUsername) {
+        formData.append('userName', newUsername);
+      }
 
-    // Only append image if there's a new image selected
-    if (newImage) {
-      const imageFile = document.getElementById('profile-pic-input').files[0];
-      const reader = new FileReader();
+      // Append the image if it's not empty
+      if (newImage) {
+        const imageFile = document.getElementById('profile-pic-input').files[0];
+        const reader = new FileReader();
+        
+        reader.onloadend = async () => {
+          const base64Image = reader.result; // This is the base64 string of the image
+          formData.append('image', base64Image);
+          
+          // Send formData to backend to update profile
+          await updateProfile(formData);
+        };
+        
+        reader.readAsDataURL(imageFile); // Convert the image to a base64 string
+      }
 
-      reader.onloadend = async () => {
-        const base64Image = reader.result; // This is the base64 string of the image
-        formData.append('image', base64Image);
-
-        // Send formData to backend to update profile
+      // If there's no image selected, only update the username
+      if (!newImage) {
         await updateProfile(formData);
-      };
-
-      reader.readAsDataURL(imageFile); // Convert the image to a base64 string
-    }
-
-    // If the username is provided, append it to formData
-    if (newUsername) {
-      formData.append('userName', newUsername);
-      // Send formData to backend to update username
-      await updateProfile(formData);
+      }
+    } else {
+      toast.error('No changes detected');
     }
   };
 
   const updateProfile = async (formData) => {
     try {
-      const response = await fetch('/api/uploadImage', {
+      const response = await fetch('/api/updateProfile', {
         method: 'POST',
         body: formData,
       });
@@ -115,11 +105,7 @@ const Account = () => {
 
       const data = await response.json();
       if (data.success) {
-        setUser((prevUser) => ({
-          ...prevUser,
-          userName: newUsername || prevUser.userName, // Update username only if it's new
-          imageUrl: data.imageUrl || prevUser.imageUrl, // Update image only if new image
-        }));
+        setUser((prevUser) => ({ ...prevUser, userName: newUsername, imageUrl: data.imageUrl }));
         setIsEditing(false);
         setIsProfileUpdated(false);
         toast.success('Profile updated successfully!');
@@ -196,16 +182,12 @@ const Account = () => {
         <div className="flex flex-col gap-4 w-full">
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-2 sm:gap-4 border-b border-gray-600 pb-4">
             <span className="w-32 font-medium text-gray-300">Username:</span>
-            {isEditingUsername ? (
-              <input
-                type="text"
-                value={newUsername}
-                onChange={handleUsernameChange}
-                className="text-gray-100 bg-gray-700 p-2 rounded-md"
-              />
-            ) : (
-              <span className="text-gray-100">{user?.userName || 'N/A'}</span>
-            )}
+            <input
+              type="text"
+              value={newUsername}
+              onChange={handleUsernameChange}
+              className="text-gray-100 bg-gray-700 p-2 rounded-md"
+            />
           </div>
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-2 sm:gap-4 border-b border-gray-600 pb-4">
             <span className="w-32 font-medium text-gray-300">Email:</span>
@@ -220,21 +202,12 @@ const Account = () => {
         </div>
       </div>
       <div className="flex gap-4 mt-6">
-        {!isEditing ? (
-          <button
-            onClick={() => setIsEditingUsername(true)}
-            className="bg-cyan-500 text-white py-2 px-4 rounded-lg"
-          >
-            Edit Username
-          </button>
-        ) : (
-          <button
-            onClick={handleSave}
-            className="bg-cyan-500 text-white py-2 px-4 rounded-lg"
-          >
-            Save Changes
-          </button>
-        )}
+        <button
+          onClick={handleSave}
+          className="bg-cyan-500 text-white py-2 px-4 rounded-lg hover:bg-cyan-400 w-full sm:w-1/3"
+        >
+          Update Profile
+        </button>
       </div>
     </div>
   );
