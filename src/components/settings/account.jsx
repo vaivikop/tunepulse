@@ -76,7 +76,8 @@ const Account = () => {
       const base64Image = reader.result; // This is the base64 string of the image
 
       const formData = new FormData();
-      formData.append('image', base64Image);
+      formData.append('image', imageFile);  // Add the image file
+      formData.append('userId', user.userId);  // Add the userId
 
       try {
         const response = await fetch('/api/uploadImage', {
