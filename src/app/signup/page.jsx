@@ -1,7 +1,8 @@
-'use client';
+"use client";
 import { setProgress } from "@/redux/features/loadingBarSlice";
 import Link from "next/link";
-import React, { useState } from "react";
+import React from "react";
+import { useState } from "react";
 import { toast } from "react-hot-toast";
 import { useDispatch } from "react-redux";
 import { useRouter } from "next/navigation";
@@ -40,35 +41,15 @@ const page = () => {
         }),
       });
       const data = await res.json();
-
       if (data.success === true) {
-        toast.success("Account created successfully. A verification email has been sent to your inbox.");
-        
-        // Call the verification email API to send the email
-        const sendVerificationRes = await fetch("/api/verifyAccount", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email: formData.email,
-          }),
-        });
-        
-        const sendVerificationData = await sendVerificationRes.json();
-
-        if (sendVerificationData.success) {
-          toast.success("Verification email sent!");
-        } else {
-          toast.error("Failed to send verification email.");
-        }
-
+        toast.success("Account created successfully");
         router.push("/login");
       } else {
-        toast.error(data?.message || "Something went wrong!");
+        toast.error(data?.message);
       }
+      console.log(data);
     } catch (error) {
-      toast.error(error?.message || "Error during sign up");
+      toast.error(error?.message);
     } finally {
       dispatch(setProgress(100));
     }
@@ -85,17 +66,16 @@ const page = () => {
   if (status === "authenticated") {
     redirect("/");
   }
-
   return (
-    <div className="w-11/12 mx-auto min-h-screen my-32">
-      <div className="flex justify-center items-center">
+    <div className=" w-11/12 mx-auto min-h-screen my-32">
+      <div className=" flex justify-center items-center">
         <div className="container flex justify-center flex-col items-center w-screen sm:w-[90vw] lg:w-1/2">
-          <h1 className="text-4xl text-cyan-400 font-medium mb-8">Sign up</h1>
+          <h1 className=" text-4xl text-cyan-400 font-medium mb-8">Sign up</h1>
           <form
             onSubmit={handelSubmit}
             className="text-white flex flex-col text-base lg:text-xl gap-5 font-medium"
           >
-            <div className="flex gap-4 items-end">
+            <div className=" flex gap-4 items-end">
               <label className="" htmlFor="userName">
                 Username
               </label>
@@ -107,11 +87,11 @@ const page = () => {
                 required
                 id="userName"
                 name="userName"
-                className="appearance-none bg-black border-b border-white focus:outline-none text-base lg:text-lg"
+                className=" appearance-none bg-black border-b border-white focus:outline-none text-base lg:text-lg"
               />
             </div>
-            <div className="flex gap-4 items-end">
-              <label className="mr-9 lg:mr-11" htmlFor="email">
+            <div className=" flex gap-4 items-end">
+              <label className=" mr-9 lg:mr-11" htmlFor="email">
                 Email
               </label>
               <input
@@ -121,10 +101,10 @@ const page = () => {
                 type="email"
                 placeholder="Email"
                 required
-                className="appearance-none bg-black border-b border-white focus:outline-none text-base lg:text-lg"
+                className=" appearance-none bg-black border-b border-white focus:outline-none text-base lg:text-lg"
               />
             </div>
-            <div className="flex gap-4 items-end">
+            <div className=" flex gap-4 items-end">
               <label className="" htmlFor="password">
                 Password
               </label>
@@ -135,10 +115,10 @@ const page = () => {
                 type="password"
                 placeholder="Password"
                 required
-                className="appearance-none bg-black border-b border-white focus:outline-none text-base lg:text-lg"
+                className=" appearance-none bg-black border-b border-white focus:outline-none text-base lg:text-lg"
               />
             </div>
-            <div className="w-full flex justify-center">
+            <div className=" w-full flex justify-center">
               <button
                 type="submit"
                 className="relative inline-block px-4 py-2 font-medium group"
@@ -150,24 +130,25 @@ const page = () => {
                 </span>
               </button>
             </div>
-            <div className="flex justify-center items-center">
-              <hr className="w-1/2 mx-2 border-white" />
-              <p className="text-xs text-white">or</p>
-              <hr className="w-1/2 mx-2 border-white" />
+            <div className=" flex justify-center items-center">
+              <hr className=" w-1/2 mx-2 border-white" />
+              <p className=" text-xs text-white">or</p>
+              <hr className=" w-1/2 mx-2 border-white" />
             </div>
-            <div className="w-full flex justify-center">
+            <div className=" w-full flex justify-center">
               <button
                 onClick={() => signIn("google")}
                 type="button"
                 className="flex items-center gap-[.7px] hover:border-[#00e6e6] justify-center px-4 py-2 group font-medium border-2 border-white rounded-sm"
               >
-                <FaGoogle className="group-hover:text-[#00e6e6]" />
-                Google
+                <FaGoogle className=" group-hover:text-[#00e6e6]" />
+                oogle
               </button>
             </div>
-            <p className="w-full flex justify-center gap-2">
+            <p className=" w-full flex justify-center gap-2">
               Already have an account?{" "}
-              <Link href={"/login"} className="text-cyan-400 font-semibold">
+              <Link href={"/login"} className=" text-cyan-400 font-semibold">
+                {" "}
                 Login
               </Link>
             </p>
