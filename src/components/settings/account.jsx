@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation'; // Import router to redirect
 import { toast } from 'react-hot-toast'; // Import toast for notifications
 
 const Account = () => {
-  const { status, data: session } = useSession(); // Session state from next-auth
+  const { status } = useSession(); // Session state from next-auth
   const [user, setUser] = useState(null); // Local state to store user data
   const [loading, setLoading] = useState(true); // Loading state to show loading skeleton
   const [isEditing, setIsEditing] = useState(false); // State to handle profile pic edit
@@ -21,19 +21,26 @@ const Account = () => {
         setLoading(true);
         
         if (status === 'authenticated') {
-          const userId = session.user.id; // Extract userId from session
-          const res = await getUserInfo(userId); // Fetch user data using userId
-          setUser(res); // Set the user data
+          const res = await fetch('/api/userInfo'); // Call user info API
+
+          const data = await res.json();
+
+          if (data?.success && data?.data) {
+            setUser(data.data); // Set the user data (including userId, username, etc.)
+          } else {
+            toast.error('Failed to fetch user info');
+          }
         }
       } catch (error) {
         console.error('Error fetching user data:', error);
+        toast.error('Error fetching user data');
       } finally {
         setLoading(false);
       }
     };
 
     fetchUser(); // Fetch user data if authenticated
-  }, [status, session]);
+  }, [status]);
 
   const handleProfileClick = () => {
     if (status === 'authenticated') {
