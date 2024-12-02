@@ -54,19 +54,15 @@ export async function POST(request) {
         const url = `${process.env.NEXTAUTH_URL}/reset-password/${resetPasswordToken}`;
         const title = "Password Reset Request";
         const body = `
-    <p>Hello ${user.name || "User"},</p>
-    <p>We received a request to reset your password. If this was not you, please ignore this email.</p>
-    <p>Click the link below to reset your password:</p>
-    <p><a href="${url}" style="color: #1d72b8; text-decoration: none;">Reset Password</a></p>
-    <p>If the above link doesn't work, copy and paste the following URL in your browser:</p>
-    <p>${url}</p>
-    <p>This link will expire in 5 minutes.</p>
-    <p>Thank you,<br/>The TunePulse Team</p>
-`;
-
-// Pass it to the mailSender function
-await mailSender(user.email, "Password Reset Request", body);
-
+            <p>Hello ${user.name || "User"},</p>
+            <p>We received a request to reset your password. If you didn't make this request, please ignore this email.</p>
+            <p>If you did request a password reset, please click the link below to create a new password:</p>
+            <p><a href="${url}" style="color: #1d72b8; text-decoration: none; font-weight: bold;">Reset Password</a></p>
+            <p>This link will expire in 5 minutes.</p>
+            <p>If you have any questions, feel free to contact us.</p>
+            <p>Best regards,<br/>Your Support Team</p>
+        `;
+        const mail = await mailSender(user.email, title, body);
 
         if (mail) {
             return NextResponse.json(
