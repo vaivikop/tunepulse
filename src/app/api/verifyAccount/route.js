@@ -56,38 +56,38 @@ export async function POST(req) {
 
       // Send the verification email
       const mailOptions = {
-        from: process.env.MAIL_USER,
+        from: `"TunePulse Support" <${process.env.MAIL_USER}>`,
         to: user.email,
-        subject: 'Verify Your Account - TunePulse',
+        subject: "Verify Your Account - TunePulse",
+        text: `Hi ${user.userName}, Please verify your account using this link: ${verificationUrl}`,
         html: `
           <html>
             <head>
               <style>
-                body { font-family: Arial, sans-serif; line-height: 1.6; background-color: #f4f4f4; padding: 20px; }
-                .email-container { max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); }
-                .logo { max-width: 150px; margin-bottom: 20px; }
-                .btn { background-color: #1da1f2; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; }
+                body { font-family: Arial, sans-serif; line-height: 1.6; background-color: #f9f9f9; color: #333; padding: 20px; }
+                .email-container { max-width: 600px; margin: auto; background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); }
+                .button { display: inline-block; padding: 10px 20px; background-color: #1da1f2; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; }
                 .footer { font-size: 12px; color: #777; text-align: center; margin-top: 20px; }
               </style>
             </head>
             <body>
               <div class="email-container">
-                <img src="https://res.cloudinary.com/dgrxq7vm5/image/upload/v1732945762/user_profiles/nnbddvreyelozffjlqiy.png" alt="TunePulse Logo" class="logo" />
                 <h2>Verify Your Account</h2>
-                <p>Hi ${user.userName},</p>
-                <p>Thank you for registering with TunePulse. Please click the button below to verify your account:</p>
-                <a href="${verificationUrl}" class="btn">Verify Account</a>
-                <p>This token is valid for 10 minutes. If you did not request this, please ignore this email for security reasons.</p>
+                <p>Hello ${user.userName},</p>
+                <p>Thank you for joining TunePulse! Please verify your account by clicking the button below:</p>
+                <a href="${verificationUrl}" class="button">Verify Account</a>
+                <p>If the button above doesn't work, you can copy and paste the following link into your browser:</p>
+                <p><a href="${verificationUrl}" style="color: #1da1f2; text-decoration: none;">${verificationUrl}</a></p>
+                <p>If you didn't create this account, please ignore this email.</p>
+                <p>This verification link will expire in 10 minutes.</p>
                 <div class="footer">
-                  <p>If you didn't create an account with TunePulse, please ignore this email.</p>
-                  <p>&copy; 2024 TunePulse, All rights reserved.</p>
+                  <p>&copy; ${new Date().getFullYear()} TunePulse, All Rights Reserved</p>
                 </div>
               </div>
             </body>
           </html>
         `,
       };
-
       await transporter.sendMail(mailOptions);
 
       return NextResponse.json({ success: true, message: 'Verification email sent' }, { status: 200 });
