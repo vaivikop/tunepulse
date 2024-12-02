@@ -77,9 +77,30 @@ export async function POST(req) {
     });
 
     const mailOptions = {
-      from: process.env.MAIL_USER,
+      from: `"TunePulse Support" <${process.env.MAIL_USER}>`, // Make sure the from address is branded
       to: email,
       subject: `Ticket Created - ${ticketId}`,
+      text: `
+        Ticket Created Successfully!
+    
+        Dear User,
+    
+        Thank you for reaching out to us. Your support ticket has been created successfully. Here are the details of your ticket:
+    
+        Ticket Information:
+        - Ticket ID: ${ticketId}
+        - Title: ${title}
+        - Category: ${category}
+        - Priority: ${priority}
+        - Status: Open
+    
+        We will get back to you shortly to resolve your issue. You can track the progress of your ticket by visiting your account page.
+    
+        If you have any further questions, feel free to reply to this email or contact us directly at shahvaivik@gmail.com.
+    
+        Best regards,
+        The TunePulse Support Team
+      `,
       html: `
         <html>
           <head>
@@ -154,22 +175,23 @@ export async function POST(req) {
                 <li><strong>Priority:</strong> ${priority}</li>
                 <li><strong>Status:</strong> Open</li>
               </ul>
-
+    
               <p>We will get back to you shortly to resolve your issue. You can track the progress of your ticket by visiting your account page.</p>
-
+    
               <a href="#" class="button">Visit Support Portal</a>
-
+    
               <div class="footer">
-                <p>If you have any further questions, feel free to reply to this email or contact us directly at shahvaivik@gmail.com.</p>
+                <p>If you have any further questions, feel free to reply to this email or contact us directly at <a href="mailto:shahvaivik@gmail.com">shahvaivik@gmail.com</a>.</p>
+                <p>&copy; 2024 TunePulse, All rights reserved.</p>
               </div>
             </div>
           </body>
         </html>
       `,
     };
-
+    
     await transporter.sendMail(mailOptions);
-
+    
     return NextResponse.json(
       { success: true, message: 'Ticket created successfully!', ticketId },
       { status: 200 }
