@@ -1,32 +1,33 @@
 const nodemailer = require("nodemailer");
 
-
 const mailSender = async (email, title, body) => {
-    try{
-            let transporter = nodemailer.createTransport({
-                host:process.env.MAIL_HOST,
-                port: 587,
-                auth:{
-                    user: process.env.MAIL_USER,
-                    pass: process.env.MAIL_PASS,
-                }
-            })
+    try {
+        let transporter = nodemailer.createTransport({
+            service: "gmail", // Use Gmail's SMTP
+            auth: {
+                user: process.env.MAIL_USER, // Your Gmail email address
+                pass: process.env.MAIL_PASS, // App password (not your Gmail password)
+            },
+        });
 
+        let info = await transporter.sendMail({
+            from: `"TunePulse Support" | <${process.env.MAIL_USER}>`,
+            to: email,
+            subject: title,
+            html: body,
+            headers: {
+                "X-Priority": "1", // High priority
+                "X-MSMail-Priority": "High",
+                Importance: "High",
+            },
+        });
 
-            let info = await transporter.sendMail({
-                from: `"TunePulse" <${process.env.MAIL_USER}>`,
-                to:`${email}`,
-                subject: `${title}`,
-                html: `${body}`,
-            })
-            console.log(info);
-            return info;
+        console.log("Email sent:", info.messageId);
+        return info;
+    } catch (error) {
+        console.error("Error sending email:", error.message);
+        throw error;
     }
-    catch(error) {
-        console.log(error.message);
-        return error;
-    }
-}
+};
 
 export default mailSender;
-
