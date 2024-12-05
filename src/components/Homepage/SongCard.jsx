@@ -1,7 +1,7 @@
 "use client";
 import React, { memo, useState } from "react";
 import Link from "next/link";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import PlayPause from "../PlayPause";
 import {
   playPause,
@@ -9,7 +9,6 @@ import {
   setFullScreen,
 } from "../../redux/features/playerSlice";
 import { getRecommendedSongs, getSongData } from "@/services/dataAPI";
-import { useSelector } from "react-redux";
 
 const SongCard = ({ song, isPlaying, activeSong }) => {
   const [loading, setLoading] = useState(false);
@@ -32,7 +31,7 @@ const SongCard = ({ song, isPlaying, activeSong }) => {
         songData?.primaryArtistsId,
         songData?.id
       );
-      // remove duplicate songs in recommendedSongs array and currentSongs array
+
       const filteredRecommendedSongs =
         recommendedSongs?.filter(
           (song) => !currentSongs?.find((s) => s?.id === song?.id)
@@ -59,7 +58,7 @@ const SongCard = ({ song, isPlaying, activeSong }) => {
   return (
     <div
       key={song?.id}
-      className="flex flex-col w-[220px] p-4 bg-white/5 bg-opacity-80 backdrop-blur-sm rounded-xl shadow-md cursor-pointer transition-transform duration-300 ease-in-out hover:scale-105"
+      className="flex flex-col w-full max-w-[300px] sm:max-w-[240px] md:max-w-[200px] p-3 bg-gradient-to-b from-gray-900 to-gray-800 rounded-xl shadow-lg cursor-pointer"
     >
       <Link
         onClick={(e) => {
@@ -75,12 +74,22 @@ const SongCard = ({ song, isPlaying, activeSong }) => {
             : ""
         }
       >
-        <div className="relative w-full h-[200px] group">
+        <div className="relative w-full h-[200px] group overflow-hidden rounded-lg">
+          <img
+            width={200}
+            height={200}
+            loading="lazy"
+            alt="song_img"
+            srcSet={`${song.image?.[0]?.url || song.image?.[0]?.link} 320w, ${
+              song.image?.[1]?.url || song.image?.[1]?.link
+            } 480w, ${song.image?.[2]?.url || song.image?.[2]?.link} 800w`}
+            sizes="(max-width: 320px) 280px, (max-width: 480px) 440px, 800px"
+            src={song.image?.[1]?.url || song.image?.[1]?.link}
+            className="w-full h-full object-cover transition-transform duration-300 ease-in-out group-hover:scale-110"
+          />
           <div
-            className={`absolute inset-0 flex justify-center items-center bg-black bg-opacity-40 rounded-lg group-hover:flex ${
-              activeSong?.id === song?.id
-                ? "hover:flex hover:bg-black hover:bg-opacity-70"
-                : "hidden"
+            className={`absolute inset-0 flex justify-center items-center bg-black bg-opacity-50 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${
+              activeSong?.id === song?.id ? "opacity-100" : ""
             }`}
           >
             <PlayPause
@@ -92,30 +101,14 @@ const SongCard = ({ song, isPlaying, activeSong }) => {
               handlePlay={handlePlayClick}
             />
           </div>
-          <img
-            width={200}
-            height={200}
-            loading="lazy"
-            alt="song_img"
-            srcSet={`${song.image?.[0]?.url || song.image?.[0]?.link} 320w, ${
-              song.image?.[1]?.url || song.image?.[1]?.link
-            } 480w, ${song.image?.[2]?.url || song.image?.[2]?.link} 800w`}
-            sizes="(max-width: 320px) 280px, (max-width: 480px) 440px, 800px"
-            src={song.image?.[1]?.url || song.image?.[1]?.link}
-            className={`rounded-lg shadow-xl w-full h-full object-cover transition-transform duration-300 ease-in-out`}
-          />
         </div>
 
-        <div className="mt-3 flex flex-col">
-          <p
-            className={`font-semibold text-sm text-white truncate w-full ${
-              song?.subtitle === "JioSaavn" ? "text-center" : ""
-            }`}
-          >
+        <div className="mt-4">
+          <p className="font-semibold text-sm text-white truncate w-full">
             {song?.name?.replaceAll("&#039;", "'")?.replaceAll("&amp;", "&") ||
               song?.title}
           </p>
-          <p className="text-xs text-gray-200 mt-1">
+          <p className="text-xs text-gray-400 mt-1 truncate">
             {song?.artists?.primary?.map((artist) => artist?.name).join(", ") ||
               song?.artists?.map((artist) => artist?.name).join(", ") ||
               (song?.subtitle != "JioSaavn" && song?.subtitle)}
