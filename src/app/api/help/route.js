@@ -205,24 +205,28 @@ export async function POST(req) {
   }
 }
 
-// Fetch all tickets
+
+// API Handler for GET Request - Fetch Ticket(s)
 export async function GET(req) {
   try {
-    // Connect to MongoDB
     await dbconnect();
 
-    // Retrieve all tickets
-    const tickets = await Ticket.find();
+    const { searchParams } = new URL(req.url);
+    const ticketId = searchParams.get('ticketId');
 
-    return NextResponse.json(
-      { success: true, tickets },
-      { status: 200 }
-    );
+    if (ticketId) {
+      const ticket = await Ticket.findOne({ ticketId });
+      if (!ticket) {
+        return NextResponse.json({ success: false, message: 'Ticket not found' }, { status: 404 });
+      }
+      return NextResponse.json({ success: true, ticket }, { status: 200 });
+    }
+
+    const tickets = await Ticket.find().sort({ createdAt: -1 });
+
+    return NextResponse.json({ success: true, tickets }, { status: 200 });
   } catch (error) {
     console.error('Error fetching tickets:', error);
-    return NextResponse.json(
-      { success: false, message: 'An error occurred while fetching tickets.' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, message: 'An error occurred while fetching tickets.' }, { status: 500 });
   }
 }
